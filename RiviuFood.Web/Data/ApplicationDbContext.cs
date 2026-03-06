@@ -52,17 +52,15 @@ namespace RiviuFood.Web.Data
 
             // 3. Cấu hình bảng Comment (Giải quyết dứt điểm lỗi Hình 3 của Boss)
             builder.Entity<Comment>(entity => {
-                entity.HasKey(c => c.Id);
-
                 entity.HasOne(c => c.User)
                       .WithMany(u => u.Comments)
                       .HasForeignKey(c => c.UserId)
-                      .OnDelete(DeleteBehavior.NoAction); // Cực kỳ quan trọng để chặn Multiple Cascade Paths
+                      .OnDelete(DeleteBehavior.NoAction);
 
                 entity.HasOne(c => c.Post)
                       .WithMany(p => p.Comments)
                       .HasForeignKey(c => c.PostId)
-                      .OnDelete(DeleteBehavior.Cascade);
+                      .OnDelete(DeleteBehavior.Cascade); 
             });
 
             // 4. Cấu hình quan hệ Nhiều-Nhiều giữa Post và Category
