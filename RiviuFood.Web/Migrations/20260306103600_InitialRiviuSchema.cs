@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace RiviuFood.Web.Migrations
 {
     /// <inheritdoc />
-    public partial class FinalVersion : Migration
+    public partial class InitialRiviuSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

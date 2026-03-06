@@ -12,8 +12,8 @@ using RiviuFood.Web.Data;
 namespace RiviuFood.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260306062437_FinalVersion")]
-    partial class FinalVersion
+    [Migration("20260306103600_InitialRiviuSchema")]
+    partial class InitialRiviuSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
