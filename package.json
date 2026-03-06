@@ -1,5 +1,28 @@
 {
   "devDependencies": {
     "tailwindcss": "^4.2.1"
+  },
+  "name": "riviufood.web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "tailwindcss -i ./wwwroot/css/tailwind.input.css -o ./wwwroot/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -i ./wwwroot/css/tailwind.input.css -o ./wwwroot/css/tailwind.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khanggplc/RiviuFood.Web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khanggplc/RiviuFood.Web/issues"
+  },
+  "homepage": "https://github.com/khanggplc/RiviuFood.Web#readme",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.2.1"
   }
 }
