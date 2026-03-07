@@ -9,7 +9,7 @@ public static class DbInitializer
     {
         context.Database.EnsureCreated();
 
-        // 1. Tạo User Admin mẫu (nếu chưa có)
+        // 1. Tạo User Admin mẫu
         if (!context.Users.Any())
         {
             var adminUser = new ApplicationUser
