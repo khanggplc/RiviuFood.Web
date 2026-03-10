@@ -10,9 +10,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "description": "",
   "devDependencies": {
-    "@tailwindcss/cli": "^4.2.1",
-    "tailwindcss": "^4.2.1"
-  },
-  "description": ""
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "tailwindcss": "^3.4.17"
+  }
 }
