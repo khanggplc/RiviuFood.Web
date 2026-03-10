@@ -1,19 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using RiviuFood.Web.Data;
 using RiviuFood.Web.Models;
-using System.Diagnostics;
 
-namespace RiviuFood.Web.Controllers
+namespace RiviuFood.Web.Controllers;
+
+public class HomeController(ApplicationDbContext context) : Controller
 {
-    public class HomeController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
+    private readonly ApplicationDbContext _context = context;
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+    public async Task<IActionResult> Index()
+    {
+
+        var posts = await _context.Posts
+            .Include(p => p.Restaurant)
+            .Include(p => p.User)
+            .OrderByDescending(p => p.CreatedAt)
+            .ToListAsync();
+
+        return View(posts);
     }
 }
