@@ -4,7 +4,7 @@ namespace RiviuFood.Web.Models.Entities
 {
     public class ApplicationUser : IdentityUser
     {
-        public required string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
         public string? AvatarUrl { get; set; }
 
         public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();

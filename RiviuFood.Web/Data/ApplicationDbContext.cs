@@ -4,7 +4,6 @@ using RiviuFood.Web.Models.Entities;
 
 namespace RiviuFood.Web.Data
 {
-    // LƯU Ý SỬA: Phải có <ApplicationUser> ở đây
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
     {
         public DbSet<Restaurant> Restaurants { get; set; }

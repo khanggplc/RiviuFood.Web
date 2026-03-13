@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using RiviuFood.Web.Data;
+using RiviuFood.Web.Hubs;
 using RiviuFood.Web.Models.Entities;
 using RiviuFood.Web.Repositories;
 
@@ -20,8 +21,10 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options => {
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
 })
-.AddEntityFrameworkStores<ApplicationDbContext>();
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders(); ;
 builder.Services.AddControllersWithViews();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -49,7 +52,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.MapHub<ChatHub>("/chatHub");
 app.UseAuthentication();
 app.UseAuthorization();
 

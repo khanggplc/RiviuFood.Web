@@ -1,0 +1,165 @@
+﻿@model RiviuFood.Web.Models.Entities.Post
+@using Microsoft.AspNetCore.Identity
+@using RiviuFood.Web.Models.Entities
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+<div class="container mx-auto px-4 py-10 max-w-4xl">
+    <a href="/" class="text-blue-600 hover:underline mb-6 inline-block">← Quay lại trang chủ</a>
+
+    <h1 class="text-4xl font-extrabold text-gray-900 mb-4">@Model.Title</h1>
+    
+    <div class="flex items-center space-x-4 mb-8 pb-8 border-b">
+        <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+            @Model.UserId.Substring(0, 1)
+        </div>
+        <div>
+            <p class="font-bold text-gray-800">Người đăng: User ID @Model.User</p>
+            <p class="text-sm text-gray-500">Đăng ngày: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
+        </div>
+    </div>
+
+    <div class="prose max-w-none text-gray-700 leading-relaxed text-lg mb-10">
+        @Model.Content
+    </div>
+    <div class="mt-16 border-t pt-10">
+        <h3 class="text-2xl font-bold text-gray-900 mb-8 flex items-center">
+            💬 Bình luận (<span id="commentCount">@Model.Comments.Count</span>)
+        </h3>
+
+        <div class="mb-10 flex gap-4">
+            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold flex-shrink-0">
+                K
+            </div>
+            <div class="flex-1">
+                <textarea id="commentContent" class="w-full border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none transition"
+                          rows="2" placeholder="Boss Khang ơi, món này ngon không?"></textarea>
+                <div class="flex justify-end mt-2">
+                    <button id="btnSendComment" type="button" class="bg-orange-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-orange-700 shadow-md transition">
+                        Gửi bình luận
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="commentList" class="space-y-6">
+            @if (Model.Comments != null && Model.Comments.Any())
+            {
+                @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                {
+                    <div id="comment-@comment.Id" class="flex gap-4 p-5 rounded-3xl bg-white border border-gray-50 shadow-sm hover:shadow-md transition group">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0">
+                            @comment.UserId.Substring(0, 1).ToUpper()
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between mb-1">
+                                <h4 class="font-bold text-gray-900 text-sm">User @comment.UserId</h4>
+                                <div class="flex items-center space-x-3">
+                                    <span class="text-xs text-gray-400">@comment.CreatedAt.ToString("HH:mm - dd/MM/yyyy")</span>
+                    
+                                    @* Chỉ hiện nút nếu là chủ sở hữu (Boss có thể thêm logic check User ID ở đây) *@
+                                    <div class="hidden group-hover:flex space-x-2 text-xs">
+                                        @if (comment.UserId == currentUserId)
+                                        {
+                                            <div class="hidden group-hover:flex space-x-2 text-xs">
+                                                <button onclick="openEditModal(@comment.Id)" class="text-blue-500 hover:underline font-bold">Sửa</button>
+                                                <button onclick="deleteComment(@comment.Id)" class="text-red-500 hover:underline font-bold">Xóa</button>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            <p id="content-@comment.Id" class="text-gray-700 text-sm leading-relaxed">
+                                @comment.Content
+                            </p>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                    <p class="text-gray-500 italic">Chưa có người bình luận. Hãy là người bình luận đầu tiên!</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
+    <script>
+        const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+        connection.on("ReceiveComment", function (user, message, postId) {
+        if (postId == @Model.Id) {
+        //Hiển thị các comment cũ ở dưới
+        var html = `
+        <div class="flex gap-4 p-5 rounded-3xl bg-blue-50 border border-blue-100 mb-4 shadow-sm">
+        <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
+        ${user.substring(0, 1).toUpperCase()}
+        </div>
+        <div class="flex-1 text-sm">
+        <div class="flex justify-between font-bold text-gray-900 mb-1">
+        <span>${user}</span>
+        <span class="text-xs text-blue-500">Vừa xong</span>
+        </div>
+        <p class="text-gray-700">${message}</p>
+        </div>
+        </div>`;
+        $("#commentList").prepend(html);
+
+        var countElement = $("#commentCount");
+        var currentCount = parseInt(countElement.text()); 
+        countElement.text(currentCount + 1); 
+
+        $("#noCommentMsg").fadeOut();
+        }
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        $("#btnSendComment").on("click", function () {
+            const text = $("#commentContent").val();
+            if (!text) return;
+
+            $.post("/Post/PostComment", { postId: @Model.Id, content: text }, function (data) {
+                connection.invoke("SendComment", data.user, data.message, data.postId);
+                $("#commentContent").val("");
+            }).fail(function () {
+                alert("Bạn cần đăng nhập để gửi bình luận.");
+            });
+        });
+
+        // Lắng nghe lệnh Xóa
+        connection.on("CommentDeleted", function (commentId) {
+        $(`#comment-${commentId}`).fadeOut(300, function() {
+        $(this).remove();
+        // Giảm số lượng bình luận
+        var count = parseInt($("#commentCount").text());
+        $("#commentCount").text(count - 1);
+        });
+        });
+
+        // Lắng nghe lệnh Sửa
+        connection.on("CommentEdited", function (commentId, newContent) {
+        $(`#comment-${commentId} .content`).text(newContent);
+        // Hiển thị hiệu ứng highlight nhẹ để biết vừa có thay đổi
+        $(`#comment-${commentId}`).addClass("bg-yellow-50").delay(1000).queue(function(next){
+        $(this).removeClass("bg-yellow-50");
+        next();
+        });
+        });
+
+        // Hàm gọi lên Server khi  nhấn Xóa
+        function deleteComment(id) {
+        if(confirm("Bạn chắc chắn muốn xóa chứ?")) {
+        $.post("/Post/DeleteComment", { id: id }, function() {
+        connection.invoke("DeleteComment", id);
+        });
+        }
+        }
+
+    </script>
+}
