@@ -63,8 +63,10 @@ public class PostController(IGenericRepository<Post> postRepo,
     public async Task<IActionResult> EditComment(int commentId, string newContent)
     {
         var comment = await _commentRepo.GetByIdAsync(commentId);
+        var currentUserId = _userManager.GetUserId(User);
 
-        if (comment == null || comment.UserId != _userManager.GetUserId(User)) return Forbid();
+        // Bảo mật: Chỉ chủ comment mới được sửa
+        if (comment == null || comment.UserId != currentUserId) return Forbid();
 
         comment.Content = newContent;
 

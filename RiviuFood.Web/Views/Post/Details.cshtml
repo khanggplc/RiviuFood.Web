@@ -60,7 +60,7 @@
                                     <span class="text-xs text-gray-400">@comment.CreatedAt.ToString("HH:mm - dd/MM/yyyy")</span>
                     
                                     @* Chỉ hiện nút nếu là chủ sở hữu (Boss có thể thêm logic check User ID ở đây) *@
-                                    <div class="hidden group-hover:flex space-x-2 text-xs">
+                                    
                                         @if (comment.UserId == currentUserId)
                                         {
                                             <div class="hidden group-hover:flex space-x-2 text-xs">
@@ -68,7 +68,7 @@
                                                 <button onclick="deleteComment(@comment.Id)" class="text-red-500 hover:underline font-bold">Xóa</button>
                                             </div>
                                         }
-                                    </div>
+                                    
                                 </div>
                             </div>
                             <p id="content-@comment.Id" class="text-gray-700 text-sm leading-relaxed">
@@ -80,10 +80,20 @@
             }
             else
             {
-                <div class="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                <div id="noCommentMsg" class="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                     <p class="text-gray-500 italic">Chưa có người bình luận. Hãy là người bình luận đầu tiên!</p>
                 </div>
             }
+        </div>
+    </div>
+</div>
+<div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl">
+        <h3 class="text-xl font-bold mb-4 text-gray-800">Chỉnh sửa bình luận</h3>
+        <textarea id="editArea" class="w-full border p-4 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none" rows="3"></textarea>
+        <div class="flex justify-end mt-4 space-x-3">
+            <button onclick="closeEdit()" class="px-4 py-2 text-gray-500 font-bold">Hủy</button>
+            <button id="btnSaveEdit" class="px-6 py-2 bg-orange-600 text-white rounded-full font-bold">Lưu lại</button>
         </div>
     </div>
 </div>
@@ -91,6 +101,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
         const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+        let editingCommentId = null;
 
         connection.on("ReceiveComment", function (user, message, postId) {
         if (postId == @Model.Id) {
@@ -144,7 +155,7 @@
 
         // Lắng nghe lệnh Sửa
         connection.on("CommentEdited", function (commentId, newContent) {
-        $(`#comment-${commentId} .content`).text(newContent);
+        $(`#content-${commentId}`).text(newContent);
         // Hiển thị hiệu ứng highlight nhẹ để biết vừa có thay đổi
         $(`#comment-${commentId}`).addClass("bg-yellow-50").delay(1000).queue(function(next){
         $(this).removeClass("bg-yellow-50");
@@ -160,6 +171,35 @@
         });
         }
         }
+
+        function openEditModal(id) {
+        editingCommentId = id;
+        const oldContent = $(`#content-${id}`).text().trim();
+        $("#editArea").val(oldContent);
+        $("#editModal").removeClass("hidden");
+        }
+
+        function closeEdit() {
+        editingCommentId = null;
+        $("#editArea").val("");
+        $("#editModal").addClass("hidden");
+        }
+
+        $("#btnSaveEdit").on("click", function () {
+        const newContent = $("#editArea").val().trim();
+        if (!editingCommentId || !newContent) return;
+
+        $.post("/Post/EditComment", { commentId: editingCommentId, newContent: newContent }, function () {
+        connection.invoke("EditComment", editingCommentId, newContent);
+        closeEdit();
+        }).fail(function () {
+        alert("Bạn chỉ có thể sửa bình luận của chính mình.");
+        });
+        });
+
+        window.openEditModal = openEditModal;
+        window.closeEdit = closeEdit;
+        window.deleteComment = deleteComment;
 
     </script>
 }
