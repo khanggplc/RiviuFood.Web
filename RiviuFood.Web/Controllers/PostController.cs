@@ -1,17 +1,24 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using RiviuFood.Web.Models.Entities;
+using RiviuFood.Web.Models.ViewModels;
 using RiviuFood.Web.Repositories;
 
 namespace RiviuFood.Web.Controllers;
 
 public class PostController(IGenericRepository<Post> postRepo,
     IGenericRepository<Comment> commentRepo,
-    UserManager<ApplicationUser> userManager) : Controller
+    IGenericRepository<Restaurant> restaurantRepo,
+    UserManager<ApplicationUser> userManager,
+    IWebHostEnvironment webHostEnvironment) : Controller
 {
     private readonly IGenericRepository<Post> _postRepo = postRepo;
     private readonly IGenericRepository<Comment> _commentRepo = commentRepo;
+    private readonly IGenericRepository<Restaurant> _restaurantRepo = restaurantRepo;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IWebHostEnvironment _webHostEnvironment = webHostEnvironment;
     // Trang chi tiết bài review
     public async Task<IActionResult> Details(int id)
     {
@@ -28,10 +35,7 @@ public class PostController(IGenericRepository<Post> postRepo,
     }
 
     // Trang tạo bài review mới (Chỉ cho người dùng đã đăng nhập)
-    public IActionResult Create()
-    {
-        return View();
-    }
+    
 
     [HttpPost]
     public async Task<IActionResult> PostComment(int postId, string content)
@@ -92,6 +96,59 @@ public class PostController(IGenericRepository<Post> postRepo,
         _commentRepo.Delete(comment);
         await _commentRepo.SaveChangesAsync();
         return Ok();
+    }
+
+    [Authorize] // Chỉ cho phép người đã đăng nhập
+    [HttpGet]
+    public async Task<IActionResult> Create()
+    {
+        var restaurants = await _restaurantRepo.GetAllAsync();
+        var viewModel = new PostCreateVM
+        {
+            Restaurants = restaurants.Select(r => new SelectListItem
+            {
+                Value = r.Id.ToString(),
+                Text = r.Name
+            })
+        };
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(PostCreateVM model)
+    {
+        if (ModelState.IsValid)
+        {
+            var post = new Post
+            {
+                Title = model.Title,
+                Content = model.Content,
+                Rating = model.Rating,
+                RestaurantId = model.RestaurantId,
+                UserId = _userManager.GetUserId(User), 
+                CreatedAt = DateTime.Now
+            };
+
+            // Xử lý Upload Ảnh 
+            if (model.ImageFile != null)
+            {
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
+                string path = Path.Combine(wwwRootPath, @"uploads\posts", fileName);
+
+                using (var fileStream = new FileStream(path, FileMode.Create))
+                {
+                    await model.ImageFile.CopyToAsync(fileStream);
+                }
+                // post.ImageUrl = @"\uploads\posts\" + fileName; 
+            }
+
+            await _postRepo.AddAsync(post);
+            await _postRepo.SaveChangesAsync();
+            return RedirectToAction("Index", "Home");
+        }
+        return View(model);
     }
 
 
