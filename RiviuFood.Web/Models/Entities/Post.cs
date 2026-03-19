@@ -11,7 +11,7 @@ public class Post
     public virtual ApplicationUser User { get; set; } = null!;
     public int RestaurantId { get; set; }
     public virtual Restaurant Restaurant { get; set; } = null!;
-
+    public string? ImageUrl { get; set; }
     public virtual ICollection<PostImage> Images { get; set; } = new List<PostImage>();
     public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
     public virtual ICollection<Like> Likes { get; set; } = new List<Like>();

@@ -13,9 +13,9 @@ public class PostCreateVM
     public int Rating { get; set; }
     [Required(ErrorMessage = "Chọn quán để tạo bài viết")]
     public int RestaurantId { get; set; }
-    //Đổ dữ liệu DropdownList Quán ăn/cafe
-    public IEnumerable<SelectListItem>? Restaurants { get; set; }
-    //nhận file ảnh từ form
-    public IFormFile? ImageFile { get; set; }
+    public IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>? Restaurants { get; set; }         //Đổ dữ liệu DropdownList Quán ăn/cafe
+
+    public IFormFile? ImageFile { get; set; }    //nhận file ảnh từ form
+
 }
 
