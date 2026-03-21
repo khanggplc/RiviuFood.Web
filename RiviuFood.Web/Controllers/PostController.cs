@@ -135,7 +135,6 @@ public class PostController(
                 string wwwRootPath = _webHostEnvironment.WebRootPath;
                 string fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
 
-                // Tạo đường dẫn thư mục
                 string uploadsFolder = Path.Combine(wwwRootPath, "uploads", "posts");
                 if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
