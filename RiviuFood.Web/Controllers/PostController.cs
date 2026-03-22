@@ -105,7 +105,7 @@ public class PostController(
             {
                 Value = r.Id.ToString(),
                 Text = r.Name
-            })
+            }).ToList()
         };
         return View(viewModel);
     }

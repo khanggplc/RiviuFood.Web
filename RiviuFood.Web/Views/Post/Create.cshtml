@@ -1,39 +1,84 @@
 ﻿@model RiviuFood.Web.Models.ViewModels.PostCreateVM
 
 <div class="container mx-auto px-4 py-10 max-w-2xl">
-    <h2 class="text-3xl font-black mb-8 text-gray-900">✍️ Đăng bài Review mới</h2>
+    <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+        <h2 class="text-3xl font-black text-gray-900 mb-2">✍️ Đăng bài Review</h2>
+        <p class="text-gray-500 mb-8">Chia sẻ trải nghiệm ẩm thực của Boss với mọi người nhé!</p>
 
-    <form asp-action="Create" method="post" enctype="multipart/form-data" class="space-y-6">
-        <div>
-            <label class="block font-bold text-gray-700 mb-2">Tiêu đề bài viết</label>
-            <input asp-for="Title" class="w-full p-4 border rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none" placeholder="Ví dụ: Cà phê muối ngon nhất quận 1..." />
-            <span asp-validation-for="Title" class="text-red-500 text-sm"></span>
-        </div>
+        <form asp-action="Create" method="post" enctype="multipart/form-data" class="space-y-6">
+            @* Chống giả mạo request *@
+            @Html.AntiForgeryToken()
 
-        <div>
-            <label class="block font-bold text-gray-700 mb-2">Chọn quán Cafe</label>
-            <select asp-for="RestaurantId" asp-items="Model.Restaurants" class="w-full p-4 border rounded-2xl outline-none">
-                <option value="">-- Chọn quán Boss vừa ghé --</option>
-            </select>
-        </div>
+            @* Tiêu đề *@
+            <div>
+                <label asp-for="Title" class="block font-bold text-gray-700 mb-2 ml-1">Tiêu đề bài viết</label>
+                <input asp-for="Title" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
+                       placeholder="Ví dụ: Cà phê muối ngon nhất quận Thuận An..." />
+                <span asp-validation-for="Title" class="text-red-500 text-xs mt-1 ml-1"></span>
+            </div>
 
-        <div>
-            <label class="block font-bold text-gray-700 mb-2">Đánh giá sao</label>
-            <input type="number" asp-for="Rating" min="1" max="5" class="w-24 p-4 border rounded-2xl outline-none" />
-        </div>
+            @* Chọn Quán *@
+            <div>
+                <label asp-for="RestaurantId" class="block font-bold text-gray-700 mb-2 ml-1">Địa điểm check-in</label>
+                <select asp-for="RestaurantId" asp-items="Model.Restaurants"
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer">
+                    <option value="">-- Chọn quán Boss vừa ghé --</option>
+                </select>
+                <span asp-validation-for="RestaurantId" class="text-red-500 text-xs mt-1 ml-1"></span>
+            </div>
 
-        <div>
-            <label class="block font-bold text-gray-700 mb-2">Ảnh check-in</label>
-            <input type="file" name="ImageFile" class="w-full" />
-        </div>
+            @* Xếp hạng & Ảnh *@
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label asp-for="Rating" class="block font-bold text-gray-700 mb-2 ml-1">Số sao (1-5)</label>
+                    <input asp-for="Rating" type="number" min="1" max="5"
+                           class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none" />
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-700 mb-2 ml-1">Ảnh món ăn</label>
+                    <label class="flex items-center justify-center w-full p-4 bg-orange-50 border-2 border-dashed border-orange-200 rounded-2xl cursor-pointer hover:bg-orange-100 transition">
+                        <span class="text-orange-600 font-medium">📸 Chọn ảnh</span>
+                        <input type="file" asp-for="ImageFile" class="hidden" id="imgInput" accept="image/*" />
+                    </label>
+                </div>
+            </div>
 
-        <div>
-            <label class="block font-bold text-gray-700 mb-2">Nội dung review</label>
-            <textarea asp-for="Content" rows="6" class="w-full p-4 border rounded-2xl outline-none" placeholder="Chia sẻ trải nghiệm của Boss..."></textarea>
-        </div>
+            @* Preview Ảnh (Cực xịn) *@
+            <div id="previewContainer" class="hidden mt-4">
+                <img id="imgPreview" src="#" class="w-full h-48 object-cover rounded-2xl border shadow-sm" />
+            </div>
 
-        <button type="submit" class="w-full bg-orange-600 text-white font-black py-4 rounded-full hover:bg-orange-700 shadow-lg transition">
-            ĐĂNG BÀI NGAY 🚀
-        </button>
-    </form>
+            @* Nội dung *@
+            <div>
+                <label asp-for="Content" class="block font-bold text-gray-700 mb-2 ml-1">Cảm nhận chi tiết</label>
+                <textarea asp-for="Content" rows="5"
+                          class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 focus:bg-white outline-none transition-all"
+                          placeholder="Món này vị thế nào, không gian quán ra sao hả Boss?"></textarea>
+                <span asp-validation-for="Content" class="text-red-500 text-xs mt-1 ml-1"></span>
+            </div>
+
+            @* Nút gửi *@
+            <button type="submit" class="w-full bg-orange-600 text-white font-black py-4 rounded-full hover:bg-orange-700 shadow-lg shadow-orange-200 transform hover:-translate-y-1 transition-all active:scale-95">
+                ĐĂNG BÀI NGAY 🚀
+            </button>
+        </form>
+    </div>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // JS để Boss xem trước ảnh ngay khi chọn
+        $("#imgInput").change(function() {
+            const file = this.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(event) {
+                    $("#imgPreview").attr("src", event.target.result);
+                    $("#previewContainer").removeClass("hidden");
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}
