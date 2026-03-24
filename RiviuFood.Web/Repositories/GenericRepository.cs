@@ -34,9 +34,17 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     public void Delete(T entity) => _context.Set<T>().Remove(entity);
     public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;
 
-    public Task<IEnumerable<T>> GetAllAsync(string includeProperties)
+    public async Task<IEnumerable<T>> GetAllAsync(string includeProperties)
     {
-        throw new NotImplementedException();
+        IQueryable<T> query = _context.Set<T>();
+        if (!string.IsNullOrWhiteSpace(includeProperties))
+        {
+            foreach (var includeProperty in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProperty.Trim());
+            }
+        }
+        return await query.ToListAsync();
     }
 
     Task<IEnumerable<object>> IGenericRepository<T>.GetAllAsync()
