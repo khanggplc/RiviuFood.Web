@@ -101,10 +101,13 @@ public class PostController(
         var restaurants = await _restaurantRepo.GetAllAsync();
         var viewModel = new PostCreateVM
         {
-            Restaurants = restaurants.Select(r => new SelectListItem
-            {
-                Value = r.Id.ToString(),
-                Text = r.Name
+            Restaurants = restaurants.Select(r => {
+                var res = r as RiviuFood.Web.Models.Entities.Restaurant;
+                return new SelectListItem
+                {
+                    Value = res.Id.ToString(),
+                    Text = res.Name
+                };
             }).ToList()
         };
         return View(viewModel);
@@ -156,10 +159,13 @@ public class PostController(
 
         // Nạp lại dữ liệu nếu Form bị lỗi
         var restaurants = await _restaurantRepo.GetAllAsync();
-        model.Restaurants = restaurants.Select(r => new SelectListItem
-        {
-            Value = r.Id.ToString(),
-            Text = r.Name
+        model.Restaurants = restaurants.Select(r => {
+            var res = r as RiviuFood.Web.Models.Entities.Restaurant;
+            return new SelectListItem
+            {
+                Value = res.Id.ToString(),
+                Text = res.Name
+            };
         });
 
         return View(model);

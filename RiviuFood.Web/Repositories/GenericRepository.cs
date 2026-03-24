@@ -33,4 +33,14 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
     public void Update(T entity) => _context.Set<T>().Update(entity);
     public void Delete(T entity) => _context.Set<T>().Remove(entity);
     public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;
+
+    public Task<IEnumerable<T>> GetAllAsync(string includeProperties)
+    {
+        throw new NotImplementedException();
+    }
+
+    Task<IEnumerable<object>> IGenericRepository<T>.GetAllAsync()
+    {
+        throw new NotImplementedException();
+    }
 }

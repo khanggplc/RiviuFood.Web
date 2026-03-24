@@ -13,8 +13,11 @@ public class HomeController(IGenericRepository<Post> postRepo) : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Sử dụng Repository để lấy dữ liệu
-        var posts = await _postRepo.GetAllAsync();
+        // Lấy tất cả bài viết, sắp xếp mới nhất lên đầu
+        var posts = await _postRepo.GetAllAsync(
+            includeProperties: "Restaurant,User"
+        );
+
         return View(posts.OrderByDescending(p => p.CreatedAt));
     }
 }

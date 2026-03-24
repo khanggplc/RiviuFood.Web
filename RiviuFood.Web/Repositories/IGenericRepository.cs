@@ -2,7 +2,7 @@
 
 public interface IGenericRepository<T> where T : class
 {
-    Task<IEnumerable<T>> GetAllAsync();
+    Task<IEnumerable<T>> GetAllAsync(string includeProperties);
 
     // Hàm mới: Lấy dữ liệu kèm theo các bảng liên quan (ví dụ: lấy Post kèm User)
     Task<T?> GetFirstOrDefaultAsync(
@@ -14,4 +14,5 @@ public interface IGenericRepository<T> where T : class
     void Update(T entity);
     void Delete(T entity);
     Task<bool> SaveChangesAsync();
+    Task<IEnumerable<object>> GetAllAsync();
 }
