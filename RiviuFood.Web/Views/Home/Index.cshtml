@@ -41,5 +41,28 @@
                 </div>
             </div>
         }
+        @using X.PagedList.Mvc.Core;
+        @using X.PagedList.Web.Common;
+
+        <div class="flex justify-center mt-12 mb-10">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+                new PagedListRenderOptions
+                {
+                    LiElementClasses = new string[] { "mx-1" },
+                    PageClasses = new string[] { "px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-orange-500 hover:text-white transition-all font-bold shadow-sm" },
+                    UlElementClasses = new string[] { "flex items-center" },
+                    ContainerDivClasses = new string[] { "pagination-container" },
+                    ActiveLiElementClasses = new string[] { "active-page" } // Cần thêm CSS để đổi màu nút hiện tại
+                })
+        </div>
+
+        <style>
+                    /* CSS nhỏ để làm nổi bật trang đang xem */
+                    .active-page a {
+                        background-color: #ea580c !important; /* màu orange-600 */
+                        color: white !important;
+                        border-color: #ea580c !important;
+                    }
+        </style>
     </div>
 </div>
