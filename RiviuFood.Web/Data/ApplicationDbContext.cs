@@ -49,7 +49,7 @@ namespace RiviuFood.Web.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // 3. Cấu hình bảng Comment (Giải quyết dứt điểm lỗi Hình 3 của Boss)
+            // 3. Cấu hình bảng Comment 
             builder.Entity<Comment>(entity => {
                 entity.HasOne(c => c.User)
                       .WithMany(u => u.Comments)

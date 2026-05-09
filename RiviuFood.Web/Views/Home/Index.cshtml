@@ -1,5 +1,32 @@
 ﻿@model IEnumerable<RiviuFood.Web.Models.Entities.Post>
+<div class="container mx-auto px-4 pt-6">
+    <!-- Search-->
+    <div class="mb-10 max-w-4xl mx-auto">
+        <form asp-action="Index" method="get" class="relative group">
+            <input type="text" name="searchString" value="@ViewBag.CurrentSearch"
+                   class="w-full pl-14 pr-32 py-5 bg-white border-2 border-gray-100 rounded-[2rem] shadow-xl shadow-gray-100/50 outline-none focus:border-orange-500 transition-all text-lg"
+                   placeholder="Tìm tên quán, món ăn hoặc tiêu đề..." />
+            
+            <div class="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                <span class="text-2xl">🔍</span>
+            </div>
 
+            <button type="submit" class="absolute right-3 top-2 bottom-2 bg-orange-600 text-white px-8 rounded-[1.5rem] font-black hover:bg-orange-700 transition shadow-lg shadow-orange-200">
+                TÌM
+            </button>
+        </form>
+
+        @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch))
+        {
+            <div class="mt-4 text-center">
+                <p class="text-gray-500">
+                    Đang hiện kết quả cho: <span class="font-bold text-orange-600">"@ViewBag.CurrentSearch"</span>
+                    <a href="/" class="ml-2 text-xs text-gray-400 underline hover:text-red-500">Xóa tìm kiếm</a>
+                </p>
+            </div>
+        }
+    </div>
+</div>
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-10">
         <h2 class="text-3xl font-black text-gray-900">🔥 Khám phá món ngon</h2>
@@ -41,28 +68,6 @@
                 </div>
             </div>
         }
-        @using X.PagedList.Mvc.Core;
-        @using X.PagedList.Web.Common;
 
-        <div class="flex justify-center mt-12 mb-10">
-            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
-                new PagedListRenderOptions
-                {
-                    LiElementClasses = new string[] { "mx-1" },
-                    PageClasses = new string[] { "px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 hover:bg-orange-500 hover:text-white transition-all font-bold shadow-sm" },
-                    UlElementClasses = new string[] { "flex items-center" },
-                    ContainerDivClasses = new string[] { "pagination-container" },
-                    ActiveLiElementClasses = new string[] { "active-page" } // Cần thêm CSS để đổi màu nút hiện tại
-                })
-        </div>
-
-        <style>
-                    /* CSS nhỏ để làm nổi bật trang đang xem */
-                    .active-page a {
-                        background-color: #ea580c !important; /* màu orange-600 */
-                        color: white !important;
-                        border-color: #ea580c !important;
-                    }
-        </style>
     </div>
 </div>
