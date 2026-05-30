@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RiviuFood.Web.Data;
 
@@ -11,9 +12,11 @@ using RiviuFood.Web.Data;
 namespace RiviuFood.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260529163300_AddPostLikeTable")]
+    partial class AddPostLikeTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -409,7 +412,7 @@ namespace RiviuFood.Web.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostLikes");
+                    b.ToTable("PostLike");
                 });
 
             modelBuilder.Entity("RiviuFood.Web.Models.Entities.Restaurant", b =>
@@ -596,9 +599,9 @@ namespace RiviuFood.Web.Migrations
                         .IsRequired();
 
                     b.HasOne("RiviuFood.Web.Models.Entities.ApplicationUser", "User")
-                        .WithMany("PostLikes")
+                        .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Post");
@@ -630,8 +633,6 @@ namespace RiviuFood.Web.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
-
-                    b.Navigation("PostLikes");
 
                     b.Navigation("Posts");
 

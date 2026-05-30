@@ -12,6 +12,7 @@ namespace RiviuFood.Web.Data
         public DbSet<PostImage> PostImages { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<Like> Likes { get; set; }
+        public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<SavedPost> SavedPosts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -49,7 +50,7 @@ namespace RiviuFood.Web.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // 3. Cấu hình bảng Comment 
+            // 3. Cấu hình bảng Comment dotnet build C:\Users\khang\source\repos\RiviuFood.Web\RiviuFood.Web\RiviuFood.Web.csproj
             builder.Entity<Comment>(entity => {
                 entity.HasOne(c => c.User)
                       .WithMany(u => u.Comments)
@@ -60,6 +61,19 @@ namespace RiviuFood.Web.Data
                       .WithMany(p => p.Comments)
                       .HasForeignKey(c => c.PostId)
                       .OnDelete(DeleteBehavior.Cascade); 
+            });
+
+            // 3b. Cấu hình bảng PostLike
+            builder.Entity<PostLike>(entity => {
+                entity.HasOne(pl => pl.User)
+                      .WithMany(u => u.PostLikes)
+                      .HasForeignKey(pl => pl.UserId)
+                      .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(pl => pl.Post)
+                      .WithMany(p => p.PostLikes)
+                      .HasForeignKey(pl => pl.PostId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             // 4. Cấu hình quan hệ Nhiều-Nhiều giữa Post và Category

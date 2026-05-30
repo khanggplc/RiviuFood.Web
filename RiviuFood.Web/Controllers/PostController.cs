@@ -2,23 +2,27 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using RiviuFood.Web.Models.Entities;
 using RiviuFood.Web.Models.ViewModels;
 using RiviuFood.Web.Repositories;
+using X.PagedList.Extensions;
+using System.Linq;
 
 namespace RiviuFood.Web.Controllers;
 
+// ĐÃ THÊM: Thêm IGenericRepository<PostLike> _likeRepo vào Primary Constructor ở đây Boss nhé
 public class PostController(
     IGenericRepository<Post> _postRepo,
     IGenericRepository<Comment> _commentRepo,
     IGenericRepository<Restaurant> _restaurantRepo,
     UserManager<ApplicationUser> _userManager,
-    IWebHostEnvironment _webHostEnvironment) : Controller
+    IWebHostEnvironment _webHostEnvironment,
+    IGenericRepository<PostLike> _likeRepo) : Controller
 {
     // Trang chi tiết bài review
     public async Task<IActionResult> Details(int id)
     {
-        // Lấy bài viết, kèm theo Quán cafe và thông tin Người đăng
         var post = await _postRepo.GetFirstOrDefaultAsync(
             p => p.Id == id,
             p => p.Restaurant,
@@ -30,13 +34,10 @@ public class PostController(
         return View(post);
     }
 
-    // Trang tạo bài review mới (Chỉ cho người dùng đã đăng nhập)
-    
-
     [HttpPost]
     public async Task<IActionResult> PostComment(int postId, string content)
     {
-        var userId = _userManager.GetUserId(User); // Lấy ID người dùng hiện tại
+        var userId = _userManager.GetUserId(User);
         if (string.IsNullOrEmpty(content) || userId == null) return BadRequest();
 
         var comment = new Comment
@@ -52,7 +53,7 @@ public class PostController(
 
         return Ok(new
         {
-            user = User.Identity?.Name ?? "Người dùng", // Trả về Name/Email thay vì Guid ID
+            user = User.Identity?.Name ?? "Người dùng",
             message = content,
             postId = postId
         });
@@ -65,7 +66,6 @@ public class PostController(
         var comment = await _commentRepo.GetByIdAsync(commentId);
         var currentUserId = _userManager.GetUserId(User);
 
-        // Bảo mật: Chỉ chủ comment mới được sửa
         if (comment == null || comment.UserId != currentUserId) return Forbid();
 
         comment.Content = newContent;
@@ -83,18 +83,14 @@ public class PostController(
         var comment = await _commentRepo.GetByIdAsync(id);
         var currentUserId = _userManager.GetUserId(User);
 
-        // Kiểm tra: Nếu không tìm thấy hoặc người xóa không phải chủ comment
-        if (comment == null || comment.UserId != currentUserId)
-        {
-            return Forbid(); // Trả về lỗi 403 - Cấm truy cập
-        }
+        if (comment == null || comment.UserId != currentUserId) return Forbid();
 
         _commentRepo.Delete(comment);
         await _commentRepo.SaveChangesAsync();
         return Ok();
     }
 
-    [Authorize] // Chỉ cho phép người đã đăng nhập
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> Create()
     {
@@ -112,6 +108,7 @@ public class PostController(
         };
         return View(viewModel);
     }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(PostCreateVM model)
@@ -119,10 +116,8 @@ public class PostController(
         if (ModelState.IsValid)
         {
             var userId = _userManager.GetUserId(User);
-            if (userId == null)
-            {
-                return BadRequest();
-            }
+            if (userId == null) return BadRequest();
+
             var post = new Post
             {
                 Title = model.Title,
@@ -148,7 +143,6 @@ public class PostController(
                     await model.ImageFile.CopyToAsync(fileStream);
                 }
 
-                // Lưu đường dẫn dùng dấu / để hiển thị web chuẩn
                 post.ImageUrl = "/uploads/posts/" + fileName;
             }
 
@@ -157,7 +151,6 @@ public class PostController(
             return RedirectToAction("Index", "Home");
         }
 
-        // Nạp lại dữ liệu nếu Form bị lỗi
         var restaurants = await _restaurantRepo.GetAllAsync();
         model.Restaurants = restaurants.Select(r => {
             var res = r as RiviuFood.Web.Models.Entities.Restaurant;
@@ -171,4 +164,80 @@ public class PostController(
         return View(model);
     }
 
+    [Authorize]
+    public async Task<IActionResult> MyPosts(int? page)
+    {
+        var userId = _userManager.GetUserId(User);
+        int pageSize = 5;
+        int pageNumber = page ?? 1;
+
+        var allPosts = await _postRepo.GetAllAsync("Restaurant");
+        var myPosts = allPosts.Where(p => p.UserId == userId);
+
+        var pagedList = myPosts.OrderByDescending(p => p.CreatedAt).ToPagedList(pageNumber, pageSize);
+        return View(pagedList);
+    }
+
+    [Authorize]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var post = await _postRepo.GetByIdAsync(id);
+        var currentUserId = _userManager.GetUserId(User);
+
+        if (post == null || post.UserId != currentUserId) return Forbid();
+
+        if (!string.IsNullOrEmpty(post.ImageUrl) && !post.ImageUrl.StartsWith("http"))
+        {
+            string wwwRootPath = _webHostEnvironment.WebRootPath;
+            string fullImagePath = Path.Combine(wwwRootPath, post.ImageUrl.TrimStart('/'));
+
+            if (System.IO.File.Exists(fullImagePath))
+            {
+                System.IO.File.Delete(fullImagePath);
+            }
+        }
+
+        _postRepo.Delete(post);
+        await _postRepo.SaveChangesAsync();
+
+        return RedirectToAction(nameof(MyPosts));
+    }
+
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> ToggleLike(int postId)
+    {
+        var userId = _userManager.GetUserId(User);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var allLikesQuery = await _likeRepo.GetAllAsync();
+        var allLikes = allLikesQuery.Cast<PostLike>();
+
+        var existingLike = allLikes.FirstOrDefault(l => l.PostId == postId && l.UserId == userId);
+
+        bool isLiked;
+
+        if (existingLike != null)
+        {
+            _likeRepo.Delete(existingLike);
+            isLiked = false;
+        }
+        else
+        {
+            var newLike = new PostLike { PostId = postId, UserId = userId };
+            await _likeRepo.AddAsync(newLike);
+            isLiked = true;
+        }
+
+        await _likeRepo.SaveChangesAsync();
+
+        // Đếm lại tổng số lượt thích
+        var updatedLikesQuery = await _likeRepo.GetAllAsync();
+        var updatedLikes = updatedLikesQuery.Cast<PostLike>();
+
+        var totalLikes = updatedLikes.Count(l => l.PostId == postId);
+        
+
+        return Json(new { success = true, isLiked = isLiked, totalLikes = totalLikes });
+    }
 }

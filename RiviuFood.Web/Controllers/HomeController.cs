@@ -18,11 +18,11 @@ public class HomeController(IGenericRepository<Post> postRepo) : Controller
         int pageSize = 6;
         int pageNumber = (page ?? 1);
 
-        // 2. Lấy dữ liệu bài viết kèm thông tin liên quan
-        var postsQuery = await _postRepo.GetAllAsync(includeProperties: "Restaurant,User");
+        // 2. Lấy dữ liệu bài viết kèm thông tin liên quan 
+        var postsQuery = await _postRepo.GetAllAsync(includeProperties: "Restaurant,User,Comments,PostLikes");
         var posts = postsQuery.AsEnumerable(); // Chuyển về Enumerable để xử lý tiếp
 
-        // 3. Logic tìm kiếm (Nếu Boss có nhập từ khóa)
+        // 3. Logic tìm kiếm 
         if (!string.IsNullOrEmpty(searchString))
         {
             searchString = searchString.ToLower();
