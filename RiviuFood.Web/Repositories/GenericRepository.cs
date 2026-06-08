@@ -30,6 +30,16 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
 
     public async Task<T?> GetByIdAsync(object id) => await _context.Set<T>().FindAsync(id);
     public async Task AddAsync(T entity) => await _context.Set<T>().AddAsync(entity);
+    public async Task UpdateAsync(T entity)
+    {
+        _context.Set<T>().Update(entity);
+        await _context.SaveChangesAsync();
+    }
+    public async Task DeleteAsync(T entity)
+    {
+        _context.Set<T>().Remove(entity);
+        await _context.SaveChangesAsync();
+    }
     public void Update(T entity) => _context.Set<T>().Update(entity);
     public void Delete(T entity) => _context.Set<T>().Remove(entity);
     public async Task<bool> SaveChangesAsync() => await _context.SaveChangesAsync() > 0;

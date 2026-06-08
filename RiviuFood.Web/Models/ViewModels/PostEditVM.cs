@@ -7,10 +7,10 @@ namespace RiviuFood.Web.Models.ViewModels
     public class PostEditVM
     {
         public int Id { get; set; }
-        [Required(ErrorMessage = "Tiêu đề không được bỏ trống")]
+        [Required(ErrorMessage = "Vui lòng nhập tiêu đề bài review!")]
         public string Title { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Nội dung review đâu rồi Boss ơi?")]
+        [Required(ErrorMessage = "Vui lòng nhập nội dung bài review!")]
         public string Content { get; set; } = string.Empty;
 
         [Range(1, 5)]

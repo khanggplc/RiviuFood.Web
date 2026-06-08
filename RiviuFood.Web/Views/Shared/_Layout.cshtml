@@ -62,5 +62,168 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <!-- CỤM CHATBOT CỐ ĐỊNH Ở GÓC MÀN HÌNH -->
+    <div id="chat-widget" class="fixed bottom-6 right-6 z-50 font-sans">
+
+        <!-- 1. NÚT TRÒN BONG BÓNG CHAT -->
+        <button id="chat-toggle-btn" class="w-14 h-14 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-orange-600 transition duration-300 transform hover:scale-110 focus:outline-none">
+            <span class="text-2xl" id="chat-icon">💬</span>
+        </button>
+
+        <!-- 2. CỬA SỔ KHUNG CHAT (Mặc định ẩn bằng class 'hidden') -->
+        <div id="chat-window" class="hidden fixed bottom-24 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden transition-all duration-300">
+
+            <!-- Header của Khung Chat -->
+            <div class="bg-orange-500 p-4 text-white flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <!-- Chấm xanh nhấp nháy báo hiệu AI đang online -->
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                    <span class="font-bold text-sm">Trợ lý AI - RiviuFood</span>
+                </div>
+                <button id="chat-close-btn" class="text-white hover:text-gray-200 focus:outline-none text-xl">✕</button>
+            </div>
+
+            <!-- Vùng hiển thị nội dung tin nhắn (Có thanh cuộn) -->
+            <div id="chat-box-body" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 text-sm">
+                <!-- Tin nhắn chào mừng mặc định từ AI -->
+                <div class="flex items-start space-x-2">
+                    <div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs">AI</div>
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[75%] border border-gray-100">
+                        Xin chào bạn nha! Hôm nay bạn muốn ăn ghi thì cứ ghi vào đây nha, mình sẽ tìm quán và các bài đánh giá về quán cho bạn tham khảo nè!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ô nhập liệu tin nhắn gửi đi -->
+            <div class="p-3 bg-white border-t border-gray-100 flex items-center space-x-2">
+                <input type="text" id="chat-user-input" placeholder="Hỏi AI tìm món ngon, quán đẹp..."
+                       class="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-orange-500" />
+                <button id="chat-send-btn" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-full text-xs font-bold transition">
+                    Gửi
+                </button>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        const toggleBtn = document.getElementById("chat-toggle-btn");
+        const closeBtn = document.getElementById("chat-close-btn");
+        const chatWindow = document.getElementById("chat-window");
+        const chatIcon = document.getElementById("chat-icon");
+
+        const chatInput = document.getElementById("chat-user-input");
+        const chatSendBtn = document.getElementById("chat-send-btn");
+        const chatBoxBody = document.getElementById("chat-box-body");
+
+        // 1. Xử lý Ẩn/Hiện khung chat
+        toggleBtn.addEventListener("click", function () {
+        if (chatWindow.classList.contains("hidden")) {
+        chatWindow.classList.remove("hidden");
+        chatIcon.innerText = "👇";
+        chatInput.focus();
+        } else {
+        chatWindow.classList.add("hidden");
+        chatIcon.innerText = "💬";
+        }
+        });
+
+        closeBtn.addEventListener("click", function () {
+        chatWindow.classList.add("hidden");
+        chatIcon.innerText = "💬";
+        });
+
+        // 2. Hàm xử lý gửi tin nhắn
+        async function handleSendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // Hiển thị tin nhắn của User lên khung chat
+        appendMessage("User", message, "bg-orange-100 text-gray-800 rounded-tr-none self-end ml-auto max-w-[75%]");
+        chatInput.value = "";
+
+        // Hiển thị trạng thái AI đang gõ
+        const typingId = appendMessage("AI", "Đang suy nghĩ...", "bg-white text-gray-400 italic rounded-tl-none border border-gray-100 max-w-[75%]");
+
+        // Gửi AJAX lên ChatbotController
+        $.ajax({
+        url: '/Chatbot/SendMessage',
+        type: 'POST',
+        data: { message: message },
+        success: function (response) {
+        // Xóa dòng trạng thái "Đang suy nghĩ"
+        document.getElementById(typingId)?.remove();
+
+        if (response.success) {
+        // Gọi hàm xử lý văn bản và dựng Card bài viết liên quan nếu có
+        renderAiResponse(response.response);
+        } else {
+        appendMessage("AI", response.response, "bg-red-50 text-red-600 rounded-tl-none border border-red-100 max-w-[75%]");
+        }
+        },
+        error: function () {
+        document.getElementById(typingId)?.remove();
+        appendMessage("AI", "Hệ thống gặp sự cố rồi Boss ơi!", "bg-red-50 text-red-600 rounded-tl-none border border-red-100 max-w-[75%]");
+        }
+        });
+        }
+
+        // Bắt sự kiện Click nút Gửi hoặc gõ phím Enter
+        chatSendBtn.addEventListener("click", handleSendMessage);
+        chatInput.addEventListener("keyup", function (e) {
+        if (e.key === "Enter") handleSendMessage();
+        });
+
+        // 3. Hàm chèn tin nhắn thô vào khung chat
+        function appendMessage(sender, text, classes) {
+        const id = "msg-" + Date.now();
+        const msgHtml = `
+        <div id="${id}" class="flex items-start space-x-2 ${sender === 'User' ? 'justify-end' : ''}">
+        ${sender === 'AI' ? '<div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>' : ''}
+        <div class="p-3 rounded-2xl shadow-sm border border-gray-100 ${classes}">
+        ${text}
+        </div>
+        </div>`;
+        chatBoxBody.insertAdjacentHTML('beforeend', msgHtml);
+        chatBoxBody.scrollTop = chatBoxBody.scrollHeight; // Tự động cuộn xuống dưới
+        return id;
+        }
+
+        // 4. HÀM THẦN THÁNH: Bóc tách mã ẩn của AI và vẽ CARD bài viết liên quan
+        function renderAiResponse(rawText) {
+        // Biểu thức chính quy quét chuỗi dạng {{RELATED_POST:ID}}
+        const regex = /{{RELATED_POST:(\d+)}}/g;
+        let match;
+        let cleanText = rawText;
+        let relatedPostIds = [];
+
+        // Thu thập tất cả các ID bài viết liên quan và lọc sạch text thô
+        while ((match = regex.exec(rawText)) !== null) {
+        relatedPostIds.push(match[1]);
+        cleanText = cleanText.replace(match[0], ""); // Xóa mã ẩn khỏi câu nói của AI
+        }
+
+        // Hiển thị câu trả lời bằng chữ của AI trước
+        appendMessage("AI", cleanText, "bg-white text-gray-800 rounded-tl-none max-w-[75%]");
+
+        // Nếu có bài viết liên quan, dựng luôn giao diện Card mini ở ngay dưới
+        relatedPostIds.forEach(postId => {
+        const cardHtml = `
+        <div class="flex items-start space-x-2 mt-1">
+        <div class="w-7 h-7 opacity-0 flex-shrink-0"></div> <!-- Giữ khoảng trống căn lề -->
+        <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-xl border border-orange-200 shadow-sm max-w-[75%] transition hover:shadow-md">
+        <p class="text-xs font-semibold text-orange-800 flex items-center mb-1">
+        📌 Bài viết liên quan hệ thống
+        </p>
+        <a href="/Post/Details/${postId}" target="_blank" class="text-xs text-blue-600 font-bold hover:underline block mb-1">
+        👉 Xem bài viết review chi tiết tại đây
+        </a>
+        </div>
+        </div>`;
+        chatBoxBody.insertAdjacentHTML('beforeend', cardHtml);
+        });
+        chatBoxBody.scrollTop = chatBoxBody.scrollHeight;
+        }
+        });
+    </script>
 </body>
 </html>
