@@ -56,9 +56,4 @@ public class GenericRepository<T>(ApplicationDbContext context) : IGenericReposi
         }
         return await query.ToListAsync();
     }
-
-    Task<IEnumerable<object>> IGenericRepository<T>.GetAllAsync()
-    {
-        throw new NotImplementedException();
-    }
 }

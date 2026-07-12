@@ -1,0 +1,67 @@
+﻿@model IEnumerable<RiviuFood.Web.Models.Entities.Restaurant>
+@{
+    ViewData["Title"] = "Quản lý danh mục quán ăn";
+}
+
+<div class="max-w-7xl mx-auto my-10 px-4 font-sans">
+    <div class="flex items-center space-x-2 text-sm text-gray-400 mb-4">
+        <a href="/Admin/Dashboard" class="hover:text-orange-500">Dashboard</a>
+        <span>/</span>
+        <span class="text-gray-600 font-medium">Quản lý quán ăn</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm h-fit">
+            <h3 class="text-lg font-bold text-gray-800 mb-1">📍 Thêm địa điểm mới</h3>
+            <form asp-action="CreateRestaurant" method="post" class="space-y-4 mt-4">
+                @Html.AntiForgeryToken()
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Tên quán ăn</label>
+                    <input type="text" name="name" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 bg-gray-50/50 transition" required />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Địa chỉ chi tiết</label>
+                    <input type="text" name="address" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500 bg-gray-50/50 transition" required />
+                </div>
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm py-3 rounded-xl shadow-md transition">
+                    Xác nhận thêm mới
+                </button>
+            </form>
+        </div>
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+                <h3 class="text-lg font-bold text-gray-800">📋 Danh sách hàng quán</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                            <th class="py-4 px-6">Tên quán</th>
+                            <th class="py-4 px-6">Địa chỉ</th>
+                            <th class="py-4 px-6 w-24 text-center">Tác vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm text-gray-600">
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr class="hover:bg-gray-50/30 transition">
+                                    <td class="py-4 px-6 font-semibold text-gray-800">@item.Name</td>
+                                    <td class="py-4 px-6 text-gray-500 text-xs">@item.Address</td>
+                                    <td class="py-4 px-6 text-center">
+                                        <form asp-action="DeleteRestaurant" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Xóa quán ăn này?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="text-xs font-bold text-red-600 hover:underline">Xóa</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

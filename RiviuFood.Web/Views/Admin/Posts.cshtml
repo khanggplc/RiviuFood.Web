@@ -1,0 +1,58 @@
+﻿@model IEnumerable<RiviuFood.Web.Models.Entities.Post>
+@{
+    ViewData["Title"] = "Quản lý bài viết review";
+}
+
+<div class="max-w-7xl mx-auto my-10 px-4 font-sans">
+    <div class="flex items-center space-x-2 text-sm text-gray-400 mb-4">
+        <a href="/Admin/Dashboard" class="hover:text-orange-500">Dashboard</a>
+        <span>/</span>
+        <span class="text-gray-600 font-medium">Quản lý bài viết</span>
+    </div>
+
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-2xl font-black text-gray-800 tracking-tight">📝 Quản lý bài viết</h2>
+        </div>
+        <form asp-action="Posts" method="get" class="flex gap-2">
+            <input type="text" name="searchString" value="@ViewBag.CurrentSearch" placeholder="Tìm kiếm bài viết..." class="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-500 bg-white transition" />
+            <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white font-bold text-sm px-4 py-2 rounded-xl transition">Tìm kiếm</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/75 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <th class="py-4 px-6">Bài viết</th>
+                        <th class="py-4 px-6">Quán ăn</th>
+                        <th class="py-4 px-6">Người đăng</th>
+                        <th class="py-4 px-6 w-28 text-center">Đánh giá</th>
+                        <th class="py-4 px-6 w-36 text-center">Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-sm text-gray-600">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var post in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition">
+                                <td class="py-4 px-6 font-bold text-gray-800">@post.Title</td>
+                                <td class="py-4 px-6 text-xs text-gray-600">📍 @(post.Restaurant?.Name ?? "Chưa rõ")</td>
+                                <td class="py-4 px-6 text-xs text-gray-600">👤 @(post.User?.UserName ?? "Ẩn danh")</td>
+                                <td class="py-4 px-6 text-center">⭐ @post.Rating/5</td>
+                                <td class="py-4 px-6 text-center">
+                                    <form asp-action="DeletePost" asp-route-id="@post.Id" method="post" onsubmit="return confirm('Xóa bài viết này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="text-xs font-bold text-red-600 hover:underline">Xóa bài</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

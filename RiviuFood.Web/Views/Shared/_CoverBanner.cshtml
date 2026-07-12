@@ -1,0 +1,54 @@
+@* Cover Banner Component *@
+<div style="background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%); display: flex; align-items: center; gap: 2rem; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <!-- Left: Logo -->
+    <div style="min-width: 150px; display: flex; align-items: center;">
+        <div style="font-size: 3rem; font-weight: 900; color: white; font-style: italic; letter-spacing: -2px;">
+            Riviu
+        </div>
+    </div>
+
+    <!-- Center: Search Bar -->
+    <div style="flex: 1; min-width: 300px;">
+        <form asp-action="Index" asp-controller="Home" method="get" style="display: flex; gap: 0.5rem; align-items: center;">
+            <div style="flex: 1; display: flex; align-items: center; background: white; border-radius: 0.5rem; padding: 0.5rem 1rem;">
+                <span style="color: #999; margin-right: 0.5rem; font-size: 1.2rem;">🔍</span>
+                <input type="text" 
+                       name="searchString" 
+                       value="@ViewBag.CurrentSearch" 
+                       placeholder="Tìm kiếm Riviu, địa điểm,..." 
+                       style="flex: 1; border: none; outline: none; background: transparent; font-size: 0.9rem;" />
+            </div>
+            <button type="submit" style="background: #f97316; color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: bold; cursor: pointer; font-size: 0.9rem;">
+                Tìm kiếm
+            </button>
+        </form>
+    </div>
+
+    <!-- Right: Location & Buttons -->
+    <div style="display: flex; align-items: center; gap: 1.5rem; min-width: fit-content; flex-wrap: wrap;">
+        <!-- Location -->
+        <div style="display: flex; align-items: center; gap: 0.5rem; color: white; font-weight: 500;">
+            <span style="font-size: 1.2rem;">📍</span>
+            <span>Hồ Chí Minh</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 0.75rem;">
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <a href="/Profile/Dashboard" style="background: white; color: #f97316; padding: 0.5rem 1.5rem; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 0.85rem; border: 2px solid white;">
+                    Hồ sơ
+                </a>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" style="background: white; color: #f97316; padding: 0.5rem 1.5rem; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 0.85rem; border: 2px solid white;">
+                    Đăng nhập
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Register" style="background: white; color: #f97316; padding: 0.5rem 1.5rem; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 0.85rem; border: 2px solid white;">
+                    Liên Hệ
+                </a>
+            }
+        </div>
+    </div>
+</div>

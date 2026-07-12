@@ -4,39 +4,113 @@
     ViewData["Title"] = "Đăng ký";
 }
 
-<div class="max-w-md mx-auto mt-8 bg-white p-6 rounded-2xl shadow">
-    <h1 class="text-2xl font-bold mb-6">Tạo tài khoản</h1>
-
-    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="space-y-4">
-        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-
-        <div>
-            <label asp-for="Input.FullName" class="form-label"></label>
-            <input asp-for="Input.FullName" class="form-control" autocomplete="name" placeholder="Họ và tên"/>
-            <span asp-validation-for="Input.FullName" class="text-danger"></span>
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-r from-orange-50 to-white p-4">
+    <div class="w-full max-w-sm">
+        <!-- LOGO RIVIU -->
+        <div class="text-center mb-8">
+            <a asp-controller="Home" asp-action="Index" class="inline-block">
+                <img src="~/images/logo.png" alt="Riviu Food Logo" class="h-auto" style="width: 150px;" />
+            </a>
         </div>
 
-        <div>
-            <label asp-for="Input.Email" class="form-label"></label>
-            <input asp-for="Input.Email" class="form-control" autocomplete="username" placeholder="Email"/>
-            <span asp-validation-for="Input.Email" class="text-danger"></span>
-        </div>
+        <!-- TIÊU ĐỀ -->
+        <h1 class="text-4xl font-bold text-gray-700 text-center mb-8">Đăng ký</h1>
 
-        <div>
-            <label asp-for="Input.Password" class="form-label"></label>
-            <input asp-for="Input.Password" class="form-control" autocomplete="new-password" type="password" placeholder="Mật khẩu"/>
-            <span asp-validation-for="Input.Password" class="text-danger"></span>
-        </div>
+        <!-- FORM ĐĂNG KÝ -->
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="space-y-4">
+            <!-- VALIDATION SUMMARY -->
+            <div asp-validation-summary="ModelOnly" class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm" role="alert"></div>
 
-        <div>
-            <label asp-for="Input.ConfirmPassword" class="form-label"></label>
-            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" type="password" placeholder="Xác thực mật khẩu" />
-            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-        </div>
+            <!-- HỌ VÀ TÊN -->
+            <div>
+                <input asp-for="Input.FullName" 
+                       class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition" 
+                       autocomplete="name" 
+                       placeholder="Họ và tên" />
+                <span asp-validation-for="Input.FullName" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
 
-        <button id="registerSubmit" type="submit" class="w-full btn btn-primary">Đăng ký</button>
-    </form>
+            <!-- EMAIL -->
+            <div>
+                <input asp-for="Input.Email" 
+                       class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition" 
+                       autocomplete="username" 
+                       placeholder="Email" />
+                <span asp-validation-for="Input.Email" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+
+            <!-- MẬT KHẨU -->
+            <div class="relative">
+                <input id="password-input"
+                       asp-for="Input.Password" 
+                       type="password"
+                       class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition" 
+                       autocomplete="new-password" 
+                       placeholder="Mật khẩu" />
+                <button type="button" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                        onclick="togglePassword('password-input', 'eye-icon')">
+                    <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </button>
+                <span asp-validation-for="Input.Password" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+
+            <!-- XÁC THỰC MẬT KHẨU -->
+            <div class="relative">
+                <input id="confirm-password-input"
+                       asp-for="Input.ConfirmPassword" 
+                       type="password"
+                       class="w-full px-4 py-3 bg-gray-100 border-0 rounded-lg text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:bg-white transition" 
+                       autocomplete="new-password" 
+                       placeholder="Xác thực mật khẩu" />
+                <button type="button" 
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+                        onclick="togglePassword('confirm-password-input', 'eye-icon-confirm')">
+                    <svg id="eye-icon-confirm" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                </button>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-red-500 text-sm mt-1 block"></span>
+            </div>
+
+            <!-- NÚT ĐĂNG KÝ -->
+            <button id="registerSubmit" 
+                    type="submit" 
+                    class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-full transition duration-200 shadow-md hover:shadow-lg">
+                Đăng ký
+            </button>
+
+            <!-- LINK ĐĂNG NHẬP -->
+            <div class="text-center mt-8">
+                <p class="text-gray-600">
+                    Đã có tài khoản? 
+                    <a asp-page="./Login" class="text-orange-500 font-bold hover:text-orange-600 transition">
+                        Đăng nhập
+                    </a>
+                </p>
+            </div>
+        </form>
+    </div>
 </div>
+
+<script>
+    function togglePassword(inputId, iconId) {
+        const input = document.getElementById(inputId);
+        const eyeIcon = document.getElementById(iconId);
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-4.753 4.753m4.753-4.753L3.596 3.039"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>';
+        } else {
+            input.type = 'password';
+            eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+        }
+    }
+</script>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

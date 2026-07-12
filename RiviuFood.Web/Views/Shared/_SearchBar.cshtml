@@ -1,0 +1,24 @@
+@* Thanh tìm kiếm ở header *@
+<form asp-action="Index" asp-controller="Home" method="get" class="flex-1 max-w-2xl mx-auto">
+    <div class="flex gap-2 bg-white rounded-full shadow-md p-2">
+        <div class="flex-1 flex items-center rounded-full px-4 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition">
+            <span class="text-gray-400 mr-2">🔍</span>
+            <input type="text" 
+                   name="searchString" 
+                   value="@ViewBag.CurrentSearch" 
+                   placeholder="Boss muốn ăn gì?" 
+                   class="w-full bg-transparent py-2 text-sm focus:outline-none text-gray-700" />
+        </div>
+        <div class="flex-1 flex items-center rounded-full px-4 bg-gray-50 focus-within:bg-white focus-within:border-orange-500 transition">
+            <span class="text-gray-400 mr-2">📍</span>
+            <input type="text" 
+                   name="locationFilter" 
+                   value="@ViewBag.CurrentLocation" 
+                   placeholder="Khu vực..." 
+                   class="w-full bg-transparent py-2 text-sm focus:outline-none text-gray-700" />
+        </div>
+        <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-full transition duration-200 shadow-md whitespace-nowrap">
+            Tìm kiếm
+        </button>
+    </div>
+</form>

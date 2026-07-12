@@ -1,41 +1,44 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using RiviuFood.Web.Data;
-using RiviuFood.Web.Models;
 using RiviuFood.Web.Models.Entities;
 using RiviuFood.Web.Repositories;
-using X.PagedList.Extensions;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace RiviuFood.Web.Controllers;
-
-public class HomeController(IGenericRepository<Post> postRepo) : Controller
+namespace RiviuFood.Web.Controllers
 {
-    private readonly IGenericRepository<Post> _postRepo = postRepo;
-
-    public async Task<IActionResult> Index(string searchString, int? page)
+    public class HomeController(IGenericRepository<Post> _postRepo) : Controller
     {
-        // 1. Khởi tạo pageNumber và pageSize
-        int pageSize = 6;
-        int pageNumber = (page ?? 1);
+        // Nhận trực tiếp repository qua Primary Constructor
+        private readonly IGenericRepository<Post> _postRepo = _postRepo;
 
-        // 2. Lấy dữ liệu bài viết kèm thông tin liên quan 
-        var postsQuery = await _postRepo.GetAllAsync(includeProperties: "Restaurant,User,Comments,PostLikes");
-        var posts = postsQuery.AsEnumerable(); // Chuyển về Enumerable để xử lý tiếp
-
-        // 3. Logic tìm kiếm 
-        if (!string.IsNullOrEmpty(searchString))
+        [HttpGet]
+        public async Task<IActionResult> Index(string? searchString, string? locationFilter)
         {
-            searchString = searchString.ToLower();
-            posts = posts.Where(p => p.Title.ToLower().Contains(searchString)
-                                  || p.Restaurant.Name.ToLower().Contains(searchString));
+            // 1. Lấy toàn bộ bài viết từ Database lên, nạp kèm thông tin Quán ăn và Người đăng
+            var allPosts = await _postRepo.GetAllAsync("Restaurant, User,Comments");
+            var postsQuery = allPosts.AsQueryable();
 
-            // Lưu lại từ khóa để hiển thị lại trên ô nhập liệu (ViewBag)
+            // 2. Bộ lọc tìm kiếm thông minh theo Tiêu đề bài viết hoặc Tên món ăn
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                postsQuery = postsQuery.Where(p => p.Title.Contains(searchString, System.StringComparison.OrdinalIgnoreCase)
+                                                || p.Content.Contains(searchString, System.StringComparison.OrdinalIgnoreCase));
+            }
+
+            // 3. Bộ lọc tìm kiếm theo Địa điểm / Tên nhà hàng
+            if (!string.IsNullOrEmpty(locationFilter))
+            {
+                postsQuery = postsQuery.Where(p => p.Restaurant != null && p.Restaurant.Name.Contains(locationFilter, System.StringComparison.OrdinalIgnoreCase));
+            }
+
+            // 4. Sắp xếp bài viết mới nhất lên đầu tiên và gửi ra giao diện
+            var result = postsQuery.OrderByDescending(p => p.CreatedAt).ToList();
+
+            // Lưu lại từ khóa tìm kiếm để hiển thị lại trên thanh input cho người dùng biết họ vừa gõ gì
             ViewBag.CurrentSearch = searchString;
+            ViewBag.CurrentLocation = locationFilter;
+
+            return View(result);
         }
-
-        // 4. Phân trang dữ liệu đã lọc
-        var pagedList = posts.OrderByDescending(p => p.CreatedAt).ToPagedList(pageNumber, pageSize);
-
-        return View(pagedList);
     }
 }

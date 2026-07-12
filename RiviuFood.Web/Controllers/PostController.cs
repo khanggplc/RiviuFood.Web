@@ -7,11 +7,13 @@ using RiviuFood.Web.Models.Entities;
 using RiviuFood.Web.Models.ViewModels;
 using RiviuFood.Web.Repositories;
 using X.PagedList.Extensions;
+using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace RiviuFood.Web.Controllers;
 
-// ĐÃ THÊM: Thêm IGenericRepository<PostLike> _likeRepo vào Primary Constructor ở đây Boss nhé
 public class PostController(
     IGenericRepository<Post> _postRepo,
     IGenericRepository<Comment> _commentRepo,
@@ -20,7 +22,9 @@ public class PostController(
     IWebHostEnvironment _webHostEnvironment,
     IGenericRepository<PostLike> _likeRepo) : Controller
 {
-    // Trang chi tiết bài review
+    // 1. Trang chi tiết bài review
+    [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> Details(int id)
     {
         var post = await _postRepo.GetFirstOrDefaultAsync(
@@ -34,6 +38,7 @@ public class PostController(
         return View(post);
     }
 
+    // 2. Thêm bình luận bằng AJAX
     [HttpPost]
     public async Task<IActionResult> PostComment(int postId, string content)
     {
@@ -59,7 +64,7 @@ public class PostController(
         });
     }
 
-    //Sửa bình luận của người dùng
+    // 3. Sửa bình luận của người dùng
     [HttpPost]
     public async Task<IActionResult> EditComment(int commentId, string newContent)
     {
@@ -76,7 +81,7 @@ public class PostController(
         return Ok();
     }
 
-    //Xóa bình luận của người dùng
+    // 4. Xóa bình luận của người dùng
     [HttpPost]
     public async Task<IActionResult> DeleteComment(int id)
     {
@@ -90,7 +95,7 @@ public class PostController(
         return Ok();
     }
 
-    // Tạo bài viết mới
+    // 5. Giao diện Tạo bài viết mới [GET]
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> Create()
@@ -98,7 +103,7 @@ public class PostController(
         var restaurants = await _restaurantRepo.GetAllAsync();
         var viewModel = new PostCreateVM
         {
-            Restaurants = restaurants.Cast<RiviuFood.Web.Models.Entities.Restaurant>().Select(r => new SelectListItem
+            Restaurants = restaurants.Cast<Restaurant>().Select(r => new SelectListItem
             {
                 Value = r.Id.ToString(),
                 Text = r.Name
@@ -106,9 +111,11 @@ public class PostController(
         };
         return View(viewModel);
     }
-    // Xử lý POST khi người dùng submit form tạo bài viết mới
+
+    // 6. Xử lý POST tạo bài viết mới kèm upload ảnh
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize]
     public async Task<IActionResult> Create(PostCreateVM model)
     {
         if (ModelState.IsValid)
@@ -149,99 +156,9 @@ public class PostController(
             return RedirectToAction("Index", "Home");
         }
 
+        // ĐÃ SỬA: Dùng Cast<Restaurant>() loại bỏ hoàn toàn cảnh báo ép kiểu
         var restaurants = await _restaurantRepo.GetAllAsync();
-        model.Restaurants = restaurants.Select(r => {
-            var res = r as RiviuFood.Web.Models.Entities.Restaurant;
-            return new SelectListItem
-            {
-                Value = res.Id.ToString(),
-                Text = res.Name
-            };
-        });
-
-        return View(model);
-    }
-    // Sửa bài viết của người dùng
-    [Authorize]
-    [HttpGet]
-    public async Task<IActionResult> Edit (Guid id)
-    {
-        // Tìm bài viết theo Id
-        var postObj = await _postRepo.GetByIdAsync(id);
-        var post = postObj as RiviuFood.Web.Models.Entities.Post;
-
-        if (post == null) return NotFound();
-
-        // Lấy danh sách nhà hàng cho ô chọn Dropdown
-        var restaurants = await _restaurantRepo.GetAllAsync("");
-
-        // Đổ dữ liệu cũ vào ViewModel để mang ra giao diện hiển thị
-        var viewModel = new PostEditVM
-        {
-            Id = post.Id,
-            Title = post.Title,
-            Content = post.Content,
-            RestaurantId = post.RestaurantId,
-            Rating = post.Rating,
-            ExistingImageUrl = post.ImageUrl,
-            Restaurants = restaurants.Cast<RiviuFood.Web.Models.Entities.Restaurant>().Select(r => new SelectListItem
-            {
-                Value = r.Id.ToString(),
-                Text = r.Name
-            }).ToList()
-        };
-
-        return View(viewModel);
-
-    }
-
-    // Xử lý POST khi người dùng submit form sửa bài viết
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(PostEditVM model)
-    {
-        if (ModelState.IsValid)
-        {
-            // Lấy bài viết gốc từ Database lên để chuẩn bị cập nhật thông tin
-            var postObj = await _postRepo.GetByIdAsync(model.Id);
-            var post = postObj as RiviuFood.Web.Models.Entities.Post;
-
-            if (post == null) return NotFound();
-
-            // Mặc định giữ lại đường dẫn ảnh cũ
-            string? fileName = post.ImageUrl;
-
-            // Nếu người dùng chọn một file ảnh mới, tiến hành ghi đè dữ liệu ảnh
-            if (model.ImageFile != null)
-            {
-                string uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads");
-                fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
-                string filePath = Path.Combine(uploadDir, fileName);
-
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
-                {
-                    await model.ImageFile.CopyToAsync(fileStream);
-                }
-                // Cập nhật đường dẫn ảnh mới
-                fileName = "/uploads/" + fileName;
-            }
-
-            // Cập nhật các giá trị thay đổi vào thực thể gốc
-            post.Title = model.Title;
-            post.Content = model.Content;
-            post.RestaurantId = model.RestaurantId;
-            post.Rating = model.Rating;
-            post.ImageUrl = fileName;
-
-            // Gọi hàm Update của Repository để cập nhật vào Database
-            await _postRepo.UpdateAsync(post);
-
-            return RedirectToAction("Dashboard", "Profile");
-        }
-
-        // Nếu có lỗi dữ liệu, nạp lại danh sách nhà hàng và trả lại giao diện Form kèm thông báo lỗi
-        var restaurants = await _restaurantRepo.GetAllAsync("");
-        model.Restaurants = restaurants.Cast<RiviuFood.Web.Models.Entities.Restaurant>().Select(r => new SelectListItem
+        model.Restaurants = restaurants.Cast<Restaurant>().Select(r => new SelectListItem
         {
             Value = r.Id.ToString(),
             Text = r.Name
@@ -250,25 +167,91 @@ public class PostController(
         return View(model);
     }
 
-    // Xóa bài viết của người dùng
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(Guid id) {
-        // Tim bai viet theo id trong database
-        var postObj = await _postRepo.GetByIdAsync(id);
-        var post = postObj as RiviuFood.Web.Models.Entities.Post;
-
+    // 7. Giao diện Sửa bài viết [GET] - Đã đồng bộ sang int id
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var post = await _postRepo.GetByIdAsync(id);
         if (post == null) return NotFound();
-        // Goi repository de xoa bai viet
-        await _postRepo.DeleteAsync(post);
 
-        // Xoa xong quay lai trang dashboard
-        return RedirectToAction("Dashboard", "Profile");
+        var restaurants = await _restaurantRepo.GetAllAsync();
+
+        var viewModel = new PostEditVM
+        {
+            Id = post.Id,
+            Title = post.Title,
+            Content = post.Content,
+            RestaurantId = post.RestaurantId,
+            Rating = post.Rating,
+            ExistingImageUrl = post.ImageUrl,
+            Restaurants = restaurants.Cast<Restaurant>().Select(r => new SelectListItem
+            {
+                Value = r.Id.ToString(),
+                Text = r.Name
+            }).ToList()
+        };
+
+        return View(viewModel);
     }
 
-
-    // Trang quản lý bài viết cá nhân của người dùng
+    // 8. Xử lý lưu bài viết sau khi Sửa [POST]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     [Authorize]
+    public async Task<IActionResult> Edit(PostEditVM model)
+    {
+        if (ModelState.IsValid)
+        {
+            var post = await _postRepo.GetByIdAsync(model.Id);
+            if (post == null) return NotFound();
+
+            var currentUserId = _userManager.GetUserId(User);
+            if (post.UserId != currentUserId) return Forbid();
+
+            string? fileName = post.ImageUrl;
+
+            if (model.ImageFile != null)
+            {
+                string wwwRootPath = _webHostEnvironment.WebRootPath;
+                fileName = Guid.NewGuid().ToString() + Path.GetExtension(model.ImageFile.FileName);
+                string uploadsFolder = Path.Combine(wwwRootPath, "uploads", "posts");
+                if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                string filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.ImageFile.CopyToAsync(fileStream);
+                }
+                fileName = "/uploads/posts/" + fileName;
+            }
+
+            post.Title = model.Title;
+            post.Content = model.Content;
+            post.RestaurantId = model.RestaurantId;
+            post.Rating = model.Rating;
+            post.ImageUrl = fileName;
+
+            _postRepo.Update(post);
+            await _postRepo.SaveChangesAsync();
+
+            return RedirectToAction("Dashboard", "Profile");
+        }
+
+        var restaurants = await _restaurantRepo.GetAllAsync();
+        model.Restaurants = restaurants.Cast<Restaurant>().Select(r => new SelectListItem
+        {
+            Value = r.Id.ToString(),
+            Text = r.Name
+        }).ToList();
+
+        return View(model);
+    }
+
+    // 9. Trang quản lý bài viết cá nhân phân trang
+    [Authorize]
+    [HttpGet]
     public async Task<IActionResult> MyPosts(int? page)
     {
         var userId = _userManager.GetUserId(User);
@@ -281,7 +264,10 @@ public class PostController(
         var pagedList = myPosts.OrderByDescending(p => p.CreatedAt).ToPagedList(pageNumber, pageSize);
         return View(pagedList);
     }
-    // Xóa bài viết của người dùng
+
+    // 10. Hàm Xóa bài viết dứt điểm [POST] - Đã hợp nhất logic an toàn bao gồm xóa file vật lý
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
@@ -290,6 +276,7 @@ public class PostController(
 
         if (post == null || post.UserId != currentUserId) return Forbid();
 
+        // Xóa file ảnh vật lý khỏi ổ cứng Server để dọn bộ nhớ rác
         if (!string.IsNullOrEmpty(post.ImageUrl) && !post.ImageUrl.StartsWith("http"))
         {
             string wwwRootPath = _webHostEnvironment.WebRootPath;
@@ -304,10 +291,10 @@ public class PostController(
         _postRepo.Delete(post);
         await _postRepo.SaveChangesAsync();
 
-        return RedirectToAction(nameof(MyPosts));
+        return RedirectToAction("Dashboard", "Profile");
     }
 
-    // Toggle like/unlike bài viết
+    // 11. Toggle like/unlike bài viết bằng AJAX
     [Authorize]
     [HttpPost]
     public async Task<IActionResult> ToggleLike(int postId)
@@ -319,7 +306,6 @@ public class PostController(
         var allLikes = allLikesQuery.Cast<PostLike>();
 
         var existingLike = allLikes.FirstOrDefault(l => l.PostId == postId && l.UserId == userId);
-
         bool isLiked;
 
         if (existingLike != null)
@@ -336,15 +322,10 @@ public class PostController(
 
         await _likeRepo.SaveChangesAsync();
 
-        // Đếm lại tổng số lượt thích
         var updatedLikesQuery = await _likeRepo.GetAllAsync();
         var updatedLikes = updatedLikesQuery.Cast<PostLike>();
-
         var totalLikes = updatedLikes.Count(l => l.PostId == postId);
-        
 
         return Json(new { success = true, isLiked = isLiked, totalLikes = totalLikes });
     }
-
-
 }

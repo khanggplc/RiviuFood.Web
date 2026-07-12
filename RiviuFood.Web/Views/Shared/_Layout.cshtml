@@ -1,100 +1,126 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - RiviuFood.Web</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - RiviuFood</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/tailwind.css" asp-append-version="true" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/RiviuFood.Web.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">RiviuFood.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div id="mainNavbar" class="navbar-collapse d-sm-inline-flex justify-content-between visible">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark !text-red-500" asp-area="" asp-controller="Home" asp-action="Privacy">test</a>
-                        </li>
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li>
-                                <a asp-controller="Post" asp-action="Create" class="bg-orange-600 text-white px-5 py-2 rounded-full font-bold hover:bg-orange-700 shadow-md transition">
-                                    + Đăng bài
-                                </a>
-                            </li>
-                        }
-						
-                    </ul>
-                    
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - RiviuFood.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <style>
+            body {
+                font-family: 'Plus Jakarta Sans', sans-serif;
+            }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- HEADER CHUẨN RIVIU (Theo image_eb3567.jpg) -->
+    <header class="bg-white sticky top-0 z-40 border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4">
+
+            <!-- 1. LOGO RIVIU (Góc trái) -->
+            <a asp-controller="Home" asp-action="Index" class="flex items-center space-x-1 no-underline">
+                <span class="text-3xl font-black italic tracking-tighter text-orange-500">Riviu</span>
+                <span class="text-xs font-bold bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-md">FOOD</span>
+            </a>
+
+            <!-- 2. THANH TÌM KIẾM BO TRÒN (Nằm giữa) -->
+            <div class="hidden md:flex flex-1 max-w-xl items-center bg-gray-100 rounded-full px-4 py-2 border border-transparent focus-within:border-orange-500 focus-within:bg-white transition">
+                <span class="text-gray-400 mr-2">🔍</span>
+                <input type="text" placeholder="Tìm kiếm Riviu, địa điểm..." class="w-full bg-transparent text-sm focus:outline-none text-gray-700" />
+                <div class="h-4 w-[1px] bg-gray-300 mx-3"></div>
+                <span class="text-xs font-semibold text-gray-500 whitespace-nowrap cursor-pointer flex items-center space-x-1">
+                    <span>📍</span>
+                    <span>Hà Nội / HCM</span>
+                </span>
+            </div>
+
+            <!-- 3. MENU ĐIỀU HƯỚNG & TÀI KHOẢN (Góc phải) -->
+            <div class="flex items-center space-x-3">
+                
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a href="/Admin/Dashboard" class="text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-full border border-red-200 no-underline flex items-center space-x-1">
+                            <span>👑</span>
+                            <span>Quản trị</span>
+                        </a>
+                    }
+
+                    <a href="/Profile/Dashboard" class="text-sm font-semibold text-gray-700 hover:text-orange-500 no-underline hidden sm:block">Trang của tôi</a>
+
+                    <a asp-controller="Post" asp-action="Create" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-4 py-2 rounded-full shadow-md transition no-underline whitespace-nowrap">
+                        + Đăng bài
+                    </a>
+
+                    <!-- Dropdown Logout gọn gàng -->
+                    <div class="pl-2 border-l border-gray-200">
+                        <partial name="_LoginPartial" />
+                    </div>
+                }
+                else
+                {
+                    <a href="/Identity/Account/Login" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs px-5 py-2.5 rounded-full shadow-md transition no-underline">
+                        Đăng nhập
+                    </a>
+                    <a href="/Identity/Account/Register" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs px-4 py-2.5 rounded-full transition no-underline hidden sm:block">
+                        Đăng ký
+                    </a>
+                }
+            </div>
+
+        </div>
+    </header>
+
+    <!-- NỘI DUNG CHÍNH (BODY) -->
+    <main role="main" class="pb-10">
+        @RenderBody()
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-gray-100 py-6 text-center text-xs text-gray-400">
+        <div class="max-w-7xl mx-auto px-4">
+            &copy; 2026 - RiviuFood.Web - Nền tảng chia sẻ ẩm thực hàng đầu.
         </div>
     </footer>
+
+    <!-- SCRIPTS -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-    <!-- CỤM CHATBOT CỐ ĐỊNH Ở GÓC MÀN HÌNH -->
-    <div id="chat-widget" class="fixed bottom-6 right-6 z-50 font-sans">
 
-        <!-- 1. NÚT TRÒN BONG BÓNG CHAT -->
+    <!-- TRỢ LÝ AI CHATBOT WIDGET -->
+    <div id="chat-widget" class="fixed bottom-6 right-6 z-50 font-sans">
         <button id="chat-toggle-btn" class="w-14 h-14 bg-orange-500 text-white rounded-full flex items-center justify-center shadow-2xl hover:bg-orange-600 transition duration-300 transform hover:scale-110 focus:outline-none">
             <span class="text-2xl" id="chat-icon">💬</span>
         </button>
 
-        <!-- 2. CỬA SỔ KHUNG CHAT (Mặc định ẩn bằng class 'hidden') -->
         <div id="chat-window" class="hidden fixed bottom-24 right-6 w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden transition-all duration-300">
-
-            <!-- Header của Khung Chat -->
             <div class="bg-orange-500 p-4 text-white flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                    <!-- Chấm xanh nhấp nháy báo hiệu AI đang online -->
                     <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                     <span class="font-bold text-sm">Trợ lý AI - RiviuFood</span>
                 </div>
                 <button id="chat-close-btn" class="text-white hover:text-gray-200 focus:outline-none text-xl">✕</button>
             </div>
 
-            <!-- Vùng hiển thị nội dung tin nhắn (Có thanh cuộn) -->
             <div id="chat-box-body" class="flex-1 p-4 overflow-y-auto space-y-3 bg-gray-50 text-sm">
-                <!-- Tin nhắn chào mừng mặc định từ AI -->
                 <div class="flex items-start space-x-2">
-                    <div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs">AI</div>
+                    <div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>
                     <div class="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[75%] border border-gray-100">
-                        Xin chào bạn nha! Hôm nay bạn muốn ăn ghi thì cứ ghi vào đây nha, mình sẽ tìm quán và các bài đánh giá về quán cho bạn tham khảo nè!
+                        Xin chào bạn nha! Hôm nay bạn muốn ăn gì thì cứ ghi vào đây nha, mình sẽ tìm quán và các bài đánh giá cho bạn nè!
                     </div>
                 </div>
             </div>
 
-            <!-- Ô nhập liệu tin nhắn gửi đi -->
             <div class="p-3 bg-white border-t border-gray-100 flex items-center space-x-2">
                 <input type="text" id="chat-user-input" placeholder="Hỏi AI tìm món ngon, quán đẹp..."
                        class="flex-1 border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-orange-500" />
@@ -104,126 +130,111 @@
             </div>
         </div>
     </div>
+
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-        const toggleBtn = document.getElementById("chat-toggle-btn");
-        const closeBtn = document.getElementById("chat-close-btn");
-        const chatWindow = document.getElementById("chat-window");
-        const chatIcon = document.getElementById("chat-icon");
+            document.addEventListener("DOMContentLoaded", function () {
+                const toggleBtn = document.getElementById("chat-toggle-btn");
+                const closeBtn = document.getElementById("chat-close-btn");
+                const chatWindow = document.getElementById("chat-window");
+                const chatIcon = document.getElementById("chat-icon");
+                const chatInput = document.getElementById("chat-user-input");
+                const chatSendBtn = document.getElementById("chat-send-btn");
+                const chatBoxBody = document.getElementById("chat-box-body");
 
-        const chatInput = document.getElementById("chat-user-input");
-        const chatSendBtn = document.getElementById("chat-send-btn");
-        const chatBoxBody = document.getElementById("chat-box-body");
+                toggleBtn.addEventListener("click", function () {
+                    if (chatWindow.classList.contains("hidden")) {
+                        chatWindow.classList.remove("hidden");
+                        chatIcon.innerText = "👇";
+                        chatInput.focus();
+                    } else {
+                        chatWindow.classList.add("hidden");
+                        chatIcon.innerText = "💬";
+                    }
+                });
 
-        // 1. Xử lý Ẩn/Hiện khung chat
-        toggleBtn.addEventListener("click", function () {
-        if (chatWindow.classList.contains("hidden")) {
-        chatWindow.classList.remove("hidden");
-        chatIcon.innerText = "👇";
-        chatInput.focus();
-        } else {
-        chatWindow.classList.add("hidden");
-        chatIcon.innerText = "💬";
-        }
-        });
+                closeBtn.addEventListener("click", function () {
+                    chatWindow.classList.add("hidden");
+                    chatIcon.innerText = "💬";
+                });
 
-        closeBtn.addEventListener("click", function () {
-        chatWindow.classList.add("hidden");
-        chatIcon.innerText = "💬";
-        });
+                async function handleSendMessage() {
+                    const message = chatInput.value.trim();
+                    if (!message) return;
 
-        // 2. Hàm xử lý gửi tin nhắn
-        async function handleSendMessage() {
-        const message = chatInput.value.trim();
-        if (!message) return;
+                    appendMessage("User", message, "bg-orange-100 text-gray-800 rounded-tr-none self-end ml-auto max-w-[75%]");
+                    chatInput.value = "";
 
-        // Hiển thị tin nhắn của User lên khung chat
-        appendMessage("User", message, "bg-orange-100 text-gray-800 rounded-tr-none self-end ml-auto max-w-[75%]");
-        chatInput.value = "";
+                    const typingId = appendMessage("AI", "Đang suy nghĩ...", "bg-white text-gray-400 italic rounded-tl-none border border-gray-100 max-w-[75%]");
 
-        // Hiển thị trạng thái AI đang gõ
-        const typingId = appendMessage("AI", "Đang suy nghĩ...", "bg-white text-gray-400 italic rounded-tl-none border border-gray-100 max-w-[75%]");
+                    $.ajax({
+                        url: '/Chatbot/Chat',
+                        type: 'POST',
+                        data: { message: message },
+                        success: function (response) {
+                            document.getElementById(typingId)?.remove();
+                            if (response.success || response.response) {
+                                renderAiResponse(response.response || response.message);
+                            } else {
+                                appendMessage("AI", response, "bg-white text-gray-800 rounded-tl-none max-w-[75%]");
+                            }
+                        },
+                        error: function () {
+                            document.getElementById(typingId)?.remove();
+                            appendMessage("AI", "Hệ thống gặp sự cố rồi Boss ơi!", "bg-red-50 text-red-600 rounded-tl-none border border-red-100 max-w-[75%]");
+                        }
+                    });
+                }
 
-        // Gửi AJAX lên ChatbotController
-        $.ajax({
-        url: '/Chatbot/SendMessage',
-        type: 'POST',
-        data: { message: message },
-        success: function (response) {
-        // Xóa dòng trạng thái "Đang suy nghĩ"
-        document.getElementById(typingId)?.remove();
+                chatSendBtn.addEventListener("click", handleSendMessage);
+                chatInput.addEventListener("keyup", function (e) {
+                    if (e.key === "Enter") handleSendMessage();
+                });
 
-        if (response.success) {
-        // Gọi hàm xử lý văn bản và dựng Card bài viết liên quan nếu có
-        renderAiResponse(response.response);
-        } else {
-        appendMessage("AI", response.response, "bg-red-50 text-red-600 rounded-tl-none border border-red-100 max-w-[75%]");
-        }
-        },
-        error: function () {
-        document.getElementById(typingId)?.remove();
-        appendMessage("AI", "Hệ thống gặp sự cố rồi Boss ơi!", "bg-red-50 text-red-600 rounded-tl-none border border-red-100 max-w-[75%]");
-        }
-        });
-        }
+                function appendMessage(sender, text, classes) {
+                    const id = "msg-" + Date.now();
+                    const msgHtml = `
+                    <div id="${id}" class="flex items-start space-x-2 ${sender === 'User' ? 'justify-end' : ''}">
+                        ${sender === 'AI' ? '<div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>' : ''}
+                        <div class="p-3 rounded-2xl shadow-sm border border-gray-100 ${classes}">
+                            ${text}
+                        </div>
+                    </div>`;
+                    chatBoxBody.insertAdjacentHTML('beforeend', msgHtml);
+                    chatBoxBody.scrollTop = chatBoxBody.scrollHeight;
+                    return id;
+                }
 
-        // Bắt sự kiện Click nút Gửi hoặc gõ phím Enter
-        chatSendBtn.addEventListener("click", handleSendMessage);
-        chatInput.addEventListener("keyup", function (e) {
-        if (e.key === "Enter") handleSendMessage();
-        });
+                function renderAiResponse(rawText) {
+                    const regex = /{{RELATED_POST:(\d+)}}/g;
+                    let match;
+                    let cleanText = rawText;
+                    let relatedPostIds = [];
 
-        // 3. Hàm chèn tin nhắn thô vào khung chat
-        function appendMessage(sender, text, classes) {
-        const id = "msg-" + Date.now();
-        const msgHtml = `
-        <div id="${id}" class="flex items-start space-x-2 ${sender === 'User' ? 'justify-end' : ''}">
-        ${sender === 'AI' ? '<div class="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0">AI</div>' : ''}
-        <div class="p-3 rounded-2xl shadow-sm border border-gray-100 ${classes}">
-        ${text}
-        </div>
-        </div>`;
-        chatBoxBody.insertAdjacentHTML('beforeend', msgHtml);
-        chatBoxBody.scrollTop = chatBoxBody.scrollHeight; // Tự động cuộn xuống dưới
-        return id;
-        }
+                    while ((match = regex.exec(rawText)) !== null) {
+                        relatedPostIds.push(match[1]);
+                        cleanText = cleanText.replace(match[0], "");
+                    }
 
-        // 4. HÀM THẦN THÁNH: Bóc tách mã ẩn của AI và vẽ CARD bài viết liên quan
-        function renderAiResponse(rawText) {
-        // Biểu thức chính quy quét chuỗi dạng {{RELATED_POST:ID}}
-        const regex = /{{RELATED_POST:(\d+)}}/g;
-        let match;
-        let cleanText = rawText;
-        let relatedPostIds = [];
+                    appendMessage("AI", cleanText, "bg-white text-gray-800 rounded-tl-none max-w-[75%]");
 
-        // Thu thập tất cả các ID bài viết liên quan và lọc sạch text thô
-        while ((match = regex.exec(rawText)) !== null) {
-        relatedPostIds.push(match[1]);
-        cleanText = cleanText.replace(match[0], ""); // Xóa mã ẩn khỏi câu nói của AI
-        }
-
-        // Hiển thị câu trả lời bằng chữ của AI trước
-        appendMessage("AI", cleanText, "bg-white text-gray-800 rounded-tl-none max-w-[75%]");
-
-        // Nếu có bài viết liên quan, dựng luôn giao diện Card mini ở ngay dưới
-        relatedPostIds.forEach(postId => {
-        const cardHtml = `
-        <div class="flex items-start space-x-2 mt-1">
-        <div class="w-7 h-7 opacity-0 flex-shrink-0"></div> <!-- Giữ khoảng trống căn lề -->
-        <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-xl border border-orange-200 shadow-sm max-w-[75%] transition hover:shadow-md">
-        <p class="text-xs font-semibold text-orange-800 flex items-center mb-1">
-        📌 Bài viết liên quan hệ thống
-        </p>
-        <a href="/Post/Details/${postId}" target="_blank" class="text-xs text-blue-600 font-bold hover:underline block mb-1">
-        👉 Xem bài viết review chi tiết tại đây
-        </a>
-        </div>
-        </div>`;
-        chatBoxBody.insertAdjacentHTML('beforeend', cardHtml);
-        });
-        chatBoxBody.scrollTop = chatBoxBody.scrollHeight;
-        }
-        });
+                    relatedPostIds.forEach(postId => {
+                        const cardHtml = `
+                        <div class="flex items-start space-x-2 mt-1">
+                            <div class="w-7 h-7 opacity-0 flex-shrink-0"></div>
+                            <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-xl border border-orange-200 shadow-sm max-w-[75%] transition hover:shadow-md">
+                                <p class="text-xs font-semibold text-orange-800 flex items-center mb-1">
+                                    📌 Bài viết liên quan
+                                </p>
+                                <a href="/Post/Details/${postId}" target="_blank" class="text-xs text-blue-600 font-bold hover:underline block mb-1">
+                                    👉 Xem bài viết review chi tiết
+                                </a>
+                            </div>
+                        </div>`;
+                        chatBoxBody.insertAdjacentHTML('beforeend', cardHtml);
+                    });
+                    chatBoxBody.scrollTop = chatBoxBody.scrollHeight;
+                }
+            });
     </script>
 </body>
 </html>

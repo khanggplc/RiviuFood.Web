@@ -1,0 +1,85 @@
+﻿@model IEnumerable<RiviuFood.Web.Models.Entities.Post>
+@{
+    ViewData["Title"] = "Bảng điều khiển Quản trị viên";
+}
+
+<div class="max-w-7xl mx-auto my-10 px-4 font-sans">
+    <div class="mb-8">
+        <h2 class="text-3xl font-black text-gray-800 tracking-tight">👑 Bảng điều khiển Quản trị viên</h2>
+        <p class="text-sm text-gray-400 mt-1">Báo cáo chỉ số hoạt động tổng quan của hệ thống RiviuFood.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tổng bài viết review</p>
+                <h3 class="text-3xl font-black text-orange-500 mt-1">@ViewBag.TotalPosts</h3>
+            </div>
+            <span class="text-3xl bg-orange-50 p-3 rounded-xl">📝</span>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Danh mục quán ăn</p>
+                <h3 class="text-3xl font-black text-amber-500 mt-1">@ViewBag.TotalRestaurants</h3>
+            </div>
+            <span class="text-3xl bg-amber-50 p-3 rounded-xl">📍</span>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tổng số bình luận</p>
+                <h3 class="text-3xl font-black text-blue-500 mt-1">@ViewBag.TotalComments</h3>
+            </div>
+            <span class="text-3xl bg-blue-50 p-3 rounded-xl">💬</span>
+        </div>
+    </div>
+
+    <div class="flex gap-4 mb-8">
+        <a href="/Admin/Restaurants" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm px-5 py-3 rounded-xl shadow-sm transition">
+            📍 Quản lý danh mục quán ăn
+        </a>
+        <a href="/Admin/Posts" class="bg-gray-800 hover:bg-gray-900 text-white font-bold text-sm px-5 py-3 rounded-xl shadow-sm transition">
+            📝 Quản lý toàn bộ bài viết
+        </a>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-bold text-gray-800">🔥 Bài viết mới cập nhật</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50/50 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        <th class="py-4 px-6">Tiêu đề bài viết</th>
+                        <th class="py-4 px-6 w-44">Ngày đăng</th>
+                        <th class="py-4 px-6 w-32 text-center">Đánh giá</th>
+                        <th class="py-4 px-6 w-36 text-center">Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-sm text-gray-600">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var post in Model)
+                        {
+                            <tr class="hover:bg-gray-50/30 transition">
+                                <td class="py-4 px-6 font-semibold text-gray-800">@post.Title</td>
+                                <td class="py-4 px-6 text-xs text-gray-400">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="py-4 px-6 text-center">
+                                    <span class="bg-amber-50 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-lg border border-amber-100">
+                                        ⭐ @post.Rating/5
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6 text-center">
+                                    <form asp-controller="Admin" asp-action="DeletePost" asp-route-id="@post.Id" method="post" onsubmit="return confirm('Xóa bài viết này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="text-xs font-bold text-red-600 hover:underline">Gỡ bỏ</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

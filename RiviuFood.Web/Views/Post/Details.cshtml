@@ -1,217 +1,173 @@
 ﻿@model RiviuFood.Web.Models.Entities.Post
-@using Microsoft.AspNetCore.Identity
-@using RiviuFood.Web.Models.Entities
-@inject UserManager<ApplicationUser> UserManager
 @{
-    var currentUserId = UserManager.GetUserId(User);
+    ViewData["Title"] = Model.Title;
 }
 
-<div class="container mx-auto px-4 py-10 max-w-4xl">
-    <a href="/" class="text-blue-600 hover:underline mb-6 inline-block">← Quay lại trang chủ</a>
-
-    <h1 class="text-4xl font-extrabold text-gray-900 mb-4">@Model.Title</h1>
-    
-    <div class="flex items-center space-x-4 mb-8 pb-8 border-b">
-        <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-            @Model.UserId.Substring(0, 1)
-        </div>
-        <div>
-            <p class="font-bold text-gray-800">Người đăng: User ID @Model.User</p>
-            <p class="text-sm text-gray-500">Đăng ngày: @Model.CreatedAt.ToString("dd/MM/yyyy")</p>
-        </div>
+<div class="max-w-4xl mx-auto my-10 px-4 font-sans">
+    <div class="mb-6">
+        <a href="javascript:history.back()" class="text-sm font-medium text-gray-500 hover:text-orange-500 transition flex items-center space-x-1">
+            <span>←</span> <span>Quay lại trang trước</span>
+        </a>
     </div>
 
-    <div class="prose max-w-none text-gray-700 leading-relaxed text-lg mb-10">
-        @Model.Content
-    </div>
-    <div class="mt-16 border-t pt-10">
-        <h3 class="text-2xl font-bold text-gray-900 mb-8 flex items-center">
-            💬 Bình luận (<span id="commentCount">@Model.Comments.Count</span>)
-        </h3>
+    <article class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
 
-        @if (User.Identity?.IsAuthenticated == true)
-        {
-            <div class="mb-10 flex gap-4">
-                <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold flex-shrink-0">
-                    K
-                </div>
-                <div class="flex-1">
-                    <textarea id="commentContent" class="w-full border border-gray-200 rounded-2xl p-4 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none resize-none transition"
-                              rows="2" placeholder="Boss Khang ơi, món này ngon không?"></textarea>
-                    <div class="flex justify-end mt-2">
-                        <button id="btnSendComment" type="button" class="bg-orange-600 text-white px-6 py-2 rounded-full font-bold text-sm hover:bg-orange-700 shadow-md transition">
-                            Gửi bình luận
-                        </button>
-                    </div>
-                </div>
-            </div>
-        }
-        else
-        {
-            <div class="mb-10 text-center py-10 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                <p class="text-gray-500 italic">Vui lòng đăng nhập để bình luận bài viết</p>
-            </div>
-        }
-
-        <div id="commentList" class="space-y-6">
-            @if (Model.Comments != null && Model.Comments.Any())
+        <div class="w-full h-[400px] bg-gray-100 relative">
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
             {
-                @foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
-                {
-                    <div id="comment-@comment.Id" class="flex gap-4 p-5 rounded-3xl bg-white border border-gray-50 shadow-sm hover:shadow-md transition group">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold shadow-sm flex-shrink-0">
-                            @comment.UserId.Substring(0, 1).ToUpper()
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center justify-between mb-1">
-                                <h4 class="font-bold text-gray-900 text-sm">User @comment.UserId</h4>
-                                <div class="flex items-center space-x-3">
-                                    <span class="text-xs text-gray-400">@comment.CreatedAt.ToString("HH:mm - dd/MM/yyyy")</span>
-                    
-                                    @* Chỉ hiện nút nếu là chủ sở hữu (Boss có thể thêm logic check User ID ở đây) *@
-                                    
-                                        @if (comment.UserId == currentUserId)
-                                        {
-                                            <div class="hidden group-hover:flex space-x-2 text-xs">
-                                                <button onclick="openEditModal(@comment.Id)" class="text-blue-500 hover:underline font-bold">Sửa</button>
-                                                <button onclick="deleteComment(@comment.Id)" class="text-red-500 hover:underline font-bold">Xóa</button>
-                                            </div>
-                                        }
-                                    
-                                </div>
-                            </div>
-                            <p id="content-@comment.Id" class="text-gray-700 text-sm leading-relaxed">
-                                @comment.Content
-                            </p>
-                        </div>
-                    </div>
-                }
+                <img src="@Model.ImageUrl" alt="@Model.Title" class="w-full h-full object-cover" />
             }
             else
             {
-                @if (User.Identity?.IsAuthenticated == true)
-                {
-                <div id="noCommentMsg" class="text-center py-12 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                    <p class="text-gray-500 italic">Chưa có người bình luận. Hãy là người bình luận đầu tiên!</p>
+                <div class="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                    <span class="text-lg">📸 Bài viết chưa có hình ảnh</span>
                 </div>
-                }
             }
         </div>
-    </div>
-</div>
-<div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-    <div class="bg-white p-6 rounded-3xl w-full max-w-md shadow-2xl">
-        <h3 class="text-xl font-bold mb-4 text-gray-800">Chỉnh sửa bình luận</h3>
-        <textarea id="editArea" class="w-full border p-4 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none" rows="3"></textarea>
-        <div class="flex justify-end mt-4 space-x-3">
-            <button onclick="closeEdit()" class="px-4 py-2 text-gray-500 font-bold">Hủy</button>
-            <button id="btnSaveEdit" class="px-6 py-2 bg-orange-600 text-white rounded-full font-bold">Lưu lại</button>
+
+        <div class="p-8">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-100">
+                <div>
+                    <span class="text-xs font-bold text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full uppercase tracking-wide">Địa điểm</span>
+                    <h3 class="text-lg font-bold text-gray-800 mt-1">📍 @(Model.Restaurant?.Name ?? "Chưa rõ quán ăn")</h3>
+                    <p class="text-sm text-gray-400">@(Model.Restaurant?.Address ?? "Chưa cập nhật địa chỉ")</p>
+                </div>
+
+                <div class="flex items-center space-x-1 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-100">
+                    <span class="text-amber-500 text-xl">⭐</span>
+                    <span class="text-lg font-bold text-amber-700">@Model.Rating / 5</span>
+                </div>
+            </div>
+
+            <h1 class="text-3xl font-extrabold text-gray-900 leading-tight mb-3">@Model.Title</h1>
+            <div class="flex items-center text-xs text-gray-400 space-x-2 mb-6">
+                <span>🕒 Đăng bởi: @(Model.User?.UserName ?? "Ẩn danh") | Lúc: @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+            <div class="text-gray-700 leading-relaxed text-base whitespace-pre-line border-b border-gray-100 pb-8">
+                @Model.Content
+            </div>
+
+            <div class="mt-8">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">💬 Bình luận từ cộng đồng</h3>
+
+                <div id="commentList" class="space-y-4 mb-6">
+                    @if (Model.Comments != null && Model.Comments.Any())
+                    {
+                        foreach (var comment in Model.Comments.OrderByDescending(c => c.CreatedAt))
+                        {
+                            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100 transition hover:bg-gray-100/50">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-sm font-bold text-gray-800">👤 @(comment.User?.UserName ?? "Thực khách")</span>
+                                    <span class="text-xs text-gray-400">🕒 @comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                </div>
+                                <p class="text-sm text-gray-600 pl-5 whitespace-pre-line">@comment.Content</p>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div id="noCommentText" class="p-6 bg-gray-50 rounded-2xl text-center text-sm text-gray-400">
+                            Chưa có bình luận nào cho bài viết này. Hãy là người đầu tiên nêu cảm nghĩ nhé, Boss!
+                        </div>
+                    }
+                </div>
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div class="bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
+                        <label class="block text-xs font-bold text-orange-700 uppercase tracking-wider mb-2">Viết bình luận của bạn</label>
+                        <div class="flex gap-3">
+                            <textarea id="commentContent" rows="2" placeholder="Món này ngon không Boss? Không gian quán ổn chứ?..."
+                                      class="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500 bg-white resize-none transition"></textarea>
+                            <button id="btnSubmitComment" type="button" data-postid="@Model.Id"
+                                    class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm px-5 rounded-xl shadow-sm transition h-fit py-3 self-end">
+                                Gửi đi
+                            </button>
+                        </div>
+                        <p id="commentError" class="text-xs text-red-500 mt-1 hidden"></p>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4 bg-gray-50 rounded-2xl text-center text-sm text-gray-500 border border-dashed">
+                        🔒 Vui lòng <a href="/Identity/Account/Login" class="text-orange-500 font-semibold hover:underline">Đăng nhập</a> để tham gia bình luận cùng cộng đồng.
+                    </div>
+                }
+            </div>
+
         </div>
-    </div>
+    </article>
 </div>
+
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.min.js"></script>
     <script>
-        const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
-        let editingCommentId = null;
+        document.addEventListener("DOMContentLoaded", function () {
+            const btnSubmit = document.getElementById("btnSubmitComment");
 
-        connection.on("ReceiveComment", function (user, message, postId) {
-        if (postId == @Model.Id) {
-        //Hiển thị các comment cũ ở dưới
-        var html = `
-        <div class="flex gap-4 p-5 rounded-3xl bg-blue-50 border border-blue-100 mb-4 shadow-sm">
-        <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold">
-        ${user.substring(0, 1).toUpperCase()}
-        </div>
-        <div class="flex-1 text-sm">
-        <div class="flex justify-between font-bold text-gray-900 mb-1">
-        <span>${user}</span>
-        <span class="text-xs text-blue-500">Vừa xong</span>
-        </div>
-        <p class="text-gray-700">${message}</p>
-        </div>
-        </div>`;
-        $("#commentList").prepend(html);
+            if (btnSubmit) {
+                btnSubmit.addEventListener("click", function () {
+                    const postId = this.getAttribute("data-postid");
+                    const contentInput = document.getElementById("commentContent");
+                    const errorText = document.getElementById("commentError");
+                    const content = contentInput.value.trim();
 
-        var countElement = $("#commentCount");
-        var currentCount = parseInt(countElement.text()); 
-        countElement.text(currentCount + 1); 
+                    // Khóa nhanh nếu người dùng bấm gửi khi chưa nhập chữ
+                    if (content === "") {
+                        errorText.textContent = "Vui lòng nhập nội dung bình luận trước khi gửi nha Boss!";
+                        errorText.classList.remove("hidden");
+                        return;
+                    }
+                    errorText.classList.add("hidden");
 
-        $("#noCommentMsg").fadeOut();
-        }
+                    // Khởi tạo đối tượng FormData để truyền tham số tương thích hoàn toàn với hàm PostComment của Boss
+                    const formData = new FormData();
+                    formData.append("postId", postId);
+                    formData.append("content", content);
+
+                    // Sử dụng Fetch API (AJAX gốc không cần JQuery) để gọi ngầm lên Controller
+                    fetch('/Post/PostComment', {
+                        method: 'POST',
+                        body: formData
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.json();
+                            }
+                            throw new Error("Lỗi hệ thống");
+                        })
+                        .then(data => {
+                            // 1. Xóa dòng chữ thông báo trống nếu có
+                            const noCommentText = document.getElementById("noCommentText");
+                            if (noCommentText) noCommentText.remove();
+
+                            // 2. Định dạng lấy thời gian hiện tại nhanh cho giao diện Client
+                            const now = new Date();
+                            const timeString = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                            // 3. Tạo cấu trúc thẻ HTML chứa bình luận mới toanh
+                            const newCommentHtml = `
+                                    <div class="bg-orange-50/30 p-4 rounded-2xl border border-orange-100/50 animation-fade-in">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <span class="text-sm font-bold text-orange-800">👤 ${data.user}</span>
+                                            <span class="text-xs text-gray-400">🕒 ${timeString}</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 pl-5 whitespace-pre-line">${data.message}</p>
+                                    </div>
+                                `;
+
+                            // 4. Chèn trực tiếp bình luận mới lên trên đầu danh sách bình luận
+                            const commentList = document.getElementById("commentList");
+                            commentList.insertAdjacentHTML('afterbegin', newCommentHtml);
+
+                            // 5. Xóa sạch chữ trong ô textarea sau khi gửi thành công để người dùng nhập câu tiếp theo
+                            contentInput.value = "";
+                        })
+                        .catch(error => {
+                            errorText.textContent = "Không thể gửi bình luận. Vui lòng kiểm tra lại kết nối!";
+                            errorText.classList.remove("hidden");
+                        });
+                });
+            }
         });
-
-        connection.start().catch(err => console.error(err.toString()));
-
-        $("#btnSendComment").on("click", function () {
-            const text = $("#commentContent").val();
-            if (!text) return;
-
-            $.post("/Post/PostComment", { postId: @Model.Id, content: text }, function (data) {
-                connection.invoke("SendComment", data.user, data.message, data.postId);
-                $("#commentContent").val("");
-            }).fail(function () {
-                alert("Bạn cần đăng nhập để gửi bình luận.");
-            });
-        });
-
-        // Lắng nghe lệnh Xóa
-        connection.on("CommentDeleted", function (commentId) {
-        $(`#comment-${commentId}`).fadeOut(300, function() {
-        $(this).remove();
-        // Giảm số lượng bình luận
-        var count = parseInt($("#commentCount").text());
-        $("#commentCount").text(count - 1);
-        });
-        });
-
-        // Lắng nghe lệnh Sửa
-        connection.on("CommentEdited", function (commentId, newContent) {
-        $(`#content-${commentId}`).text(newContent);
-        // Hiển thị hiệu ứng highlight nhẹ để biết vừa có thay đổi
-        $(`#comment-${commentId}`).addClass("bg-yellow-50").delay(1000).queue(function(next){
-        $(this).removeClass("bg-yellow-50");
-        next();
-        });
-        });
-
-        // Hàm gọi lên Server khi  nhấn Xóa
-        function deleteComment(id) {
-        if(confirm("Bạn chắc chắn muốn xóa chứ?")) {
-        $.post("/Post/DeleteComment", { id: id }, function() {
-        connection.invoke("DeleteComment", id);
-        });
-        }
-        }
-
-        function openEditModal(id) {
-        editingCommentId = id;
-        const oldContent = $(`#content-${id}`).text().trim();
-        $("#editArea").val(oldContent);
-        $("#editModal").removeClass("hidden");
-        }
-
-        function closeEdit() {
-        editingCommentId = null;
-        $("#editArea").val("");
-        $("#editModal").addClass("hidden");
-        }
-
-        $("#btnSaveEdit").on("click", function () {
-        const newContent = $("#editArea").val().trim();
-        if (!editingCommentId || !newContent) return;
-
-        $.post("/Post/EditComment", { commentId: editingCommentId, newContent: newContent }, function () {
-        connection.invoke("EditComment", editingCommentId, newContent);
-        closeEdit();
-        }).fail(function () {
-        alert("Bạn chỉ có thể sửa bình luận của chính mình.");
-        });
-        });
-
-        window.openEditModal = openEditModal;
-        window.closeEdit = closeEdit;
-        window.deleteComment = deleteComment;
-
     </script>
 }
