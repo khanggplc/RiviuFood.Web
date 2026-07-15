@@ -1,6 +1,10 @@
-﻿@model RiviuFood.Web.Models.Entities.Post
+@model RiviuFood.Web.Models.Entities.Post
 @{
     ViewData["Title"] = Model.Title;
+    var currentUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var isLiked = Model.PostLikes != null && !string.IsNullOrEmpty(currentUserId)
+                  && Model.PostLikes.Any(l => l.UserId == currentUserId);
+    var likeCount = Model.PostLikes?.Count ?? 0;
 }
 
 <div class="max-w-4xl mx-auto my-10 px-4 font-sans">
@@ -46,6 +50,35 @@
             <div class="text-gray-700 leading-relaxed text-base whitespace-pre-line border-b border-gray-100 pb-8">
                 @Model.Content
             </div>
+
+            <!-- ===== LIKE SECTION ===== -->
+            <div class="flex items-center gap-4 py-4 border-b border-gray-100">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <button id="btnToggleLike"
+                            data-postid="@Model.Id"
+                            data-liked="@isLiked.ToString().ToLower()"
+                            class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-200 border-2
+                                   @(isLiked ? "bg-orange-500 text-white border-orange-500 shadow-md" : "bg-white text-gray-600 border-gray-200 hover:border-orange-400 hover:text-orange-500")">
+                        <span id="likeIcon">@(isLiked ? "❤️" : "🤍")</span>
+                        <span id="likeLabel">@(isLiked ? "Đã thích" : "Thích")</span>
+                    </button>
+                }
+                else
+                {
+                    <a href="/Identity/Account/Login"
+                       class="flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm border-2 border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-500 transition-all">
+                        🤍 Thích
+                    </a>
+                }
+
+                <div class="flex items-center gap-1.5 text-sm text-gray-500">
+                    <span>❤️</span>
+                    <span id="likeCount" class="font-bold text-gray-700">@likeCount</span>
+                    <span>lượt thích</span>
+                </div>
+            </div>
+            <!-- ===== END LIKE SECTION ===== -->
 
             <div class="mt-8">
                 <h3 class="text-xl font-bold text-gray-800 mb-4">💬 Bình luận từ cộng đồng</h3>
@@ -102,6 +135,62 @@
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+
+            // ========== LIKE TOGGLE ==========
+            const btnLike = document.getElementById("btnToggleLike");
+            if (btnLike) {
+                btnLike.addEventListener("click", async function () {
+                    const postId = this.getAttribute("data-postid");
+                    const icon   = document.getElementById("likeIcon");
+                    const label  = document.getElementById("likeLabel");
+                    const count  = document.getElementById("likeCount");
+
+                    // Lấy token CSRF từ form ẩn của ASP.NET
+                    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                                  || await fetch('/').then(() => ''); // fallback
+
+                    try {
+                        const formData = new FormData();
+                        formData.append("postId", postId);
+
+                        const response = await fetch('/Post/ToggleLike', {
+                            method: 'POST',
+                            headers: {
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+                            },
+                            body: formData
+                        });
+
+                        if (!response.ok) throw new Error('Lỗi ' + response.status);
+
+                        const data = await response.json();
+                        if (data.success) {
+                            const liked = data.isLiked;
+
+                            // Cập nhật icon & label
+                            icon.textContent  = liked ? '❤️' : '🤍';
+                            label.textContent = liked ? 'Đã thích' : 'Thích';
+                            count.textContent = data.totalLikes;
+
+                            // Cập nhật style nút
+                            if (liked) {
+                                btnLike.classList.add('bg-orange-500', 'text-white', 'border-orange-500', 'shadow-md');
+                                btnLike.classList.remove('bg-white', 'text-gray-600', 'border-gray-200');
+                            } else {
+                                btnLike.classList.remove('bg-orange-500', 'text-white', 'border-orange-500', 'shadow-md');
+                                btnLike.classList.add('bg-white', 'text-gray-600', 'border-gray-200');
+                            }
+
+                            btnLike.setAttribute("data-liked", liked.toString());
+                        }
+                    } catch (err) {
+                        console.error('Like error:', err);
+                        alert('Có lỗi xảy ra khi thích bài viết. Vui lòng thử lại!');
+                    }
+                });
+            }
+
+            // ========== COMMENT ==========
             const btnSubmit = document.getElementById("btnSubmitComment");
 
             if (btnSubmit) {
@@ -111,7 +200,6 @@
                     const errorText = document.getElementById("commentError");
                     const content = contentInput.value.trim();
 
-                    // Khóa nhanh nếu người dùng bấm gửi khi chưa nhập chữ
                     if (content === "") {
                         errorText.textContent = "Vui lòng nhập nội dung bình luận trước khi gửi nha Boss!";
                         errorText.classList.remove("hidden");
@@ -119,47 +207,37 @@
                     }
                     errorText.classList.add("hidden");
 
-                    // Khởi tạo đối tượng FormData để truyền tham số tương thích hoàn toàn với hàm PostComment của Boss
                     const formData = new FormData();
                     formData.append("postId", postId);
                     formData.append("content", content);
 
-                    // Sử dụng Fetch API (AJAX gốc không cần JQuery) để gọi ngầm lên Controller
                     fetch('/Post/PostComment', {
                         method: 'POST',
                         body: formData
                     })
                         .then(response => {
-                            if (response.ok) {
-                                return response.json();
-                            }
+                            if (response.ok) return response.json();
                             throw new Error("Lỗi hệ thống");
                         })
                         .then(data => {
-                            // 1. Xóa dòng chữ thông báo trống nếu có
                             const noCommentText = document.getElementById("noCommentText");
                             if (noCommentText) noCommentText.remove();
 
-                            // 2. Định dạng lấy thời gian hiện tại nhanh cho giao diện Client
                             const now = new Date();
                             const timeString = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-                            // 3. Tạo cấu trúc thẻ HTML chứa bình luận mới toanh
                             const newCommentHtml = `
-                                    <div class="bg-orange-50/30 p-4 rounded-2xl border border-orange-100/50 animation-fade-in">
-                                        <div class="flex items-center justify-between mb-1">
-                                            <span class="text-sm font-bold text-orange-800">👤 ${data.user}</span>
-                                            <span class="text-xs text-gray-400">🕒 ${timeString}</span>
-                                        </div>
-                                        <p class="text-sm text-gray-600 pl-5 whitespace-pre-line">${data.message}</p>
+                                <div class="bg-orange-50/30 p-4 rounded-2xl border border-orange-100/50">
+                                    <div class="flex items-center justify-between mb-1">
+                                        <span class="text-sm font-bold text-orange-800">👤 ${data.user}</span>
+                                        <span class="text-xs text-gray-400">🕒 ${timeString}</span>
                                     </div>
-                                `;
+                                    <p class="text-sm text-gray-600 pl-5 whitespace-pre-line">${data.message}</p>
+                                </div>
+                            `;
 
-                            // 4. Chèn trực tiếp bình luận mới lên trên đầu danh sách bình luận
                             const commentList = document.getElementById("commentList");
                             commentList.insertAdjacentHTML('afterbegin', newCommentHtml);
-
-                            // 5. Xóa sạch chữ trong ô textarea sau khi gửi thành công để người dùng nhập câu tiếp theo
                             contentInput.value = "";
                         })
                         .catch(error => {

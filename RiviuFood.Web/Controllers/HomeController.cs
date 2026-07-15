@@ -15,7 +15,7 @@ namespace RiviuFood.Web.Controllers
         public async Task<IActionResult> Index(string? searchString, string? locationFilter)
         {
             // 1. Lấy toàn bộ bài viết từ Database lên, nạp kèm thông tin Quán ăn và Người đăng
-            var allPosts = await _postRepo.GetAllAsync("Restaurant, User,Comments");
+            var allPosts = await _postRepo.GetAllAsync("Restaurant, User, Comments, PostLikes");
             var postsQuery = allPosts.AsQueryable();
 
             // 2. Bộ lọc tìm kiếm thông minh theo Tiêu đề bài viết hoặc Tên món ăn

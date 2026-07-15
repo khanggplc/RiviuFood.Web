@@ -3,78 +3,408 @@
     ViewData["Title"] = "Trang chủ - Thế giới ẩm thực RiviuFood";
 }
 
-<!-- Cover Banner -->
+<style>
+    .fb-feed-wrapper {
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 24px 16px;
+    }
 
+    .fb-feed-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
 
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 my-12 font-sans">
-    <div class="flex items-center justify-between mb-8">
-        <h2 class="text-2xl font-black text-gray-800 tracking-tight">🔥 Bài viết review mới nhất</h2>
+    .fb-feed-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #1c1e21;
+        letter-spacing: -0.3px;
+    }
+
+    .fb-clear-filter {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: #f97316;
+        text-decoration: none;
+        padding: 5px 12px;
+        border-radius: 20px;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        transition: all .2s;
+    }
+
+    .fb-clear-filter:hover {
+        background: #ffedd5;
+        text-decoration: none;
+        color: #ea580c;
+    }
+
+    /* ====== CARD ====== */
+    .fb-post-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.06);
+        margin-bottom: 16px;
+        overflow: hidden;
+        transition: box-shadow .25s ease;
+        border: 1px solid #e4e6ea;
+    }
+
+    .fb-post-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+    }
+
+    /* Header */
+    .fb-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px 10px;
+    }
+
+    .fb-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f97316, #fbbf24);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: white;
+        font-size: 1rem;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    .fb-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .fb-user-meta {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .fb-user-name {
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #050505;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .fb-restaurant-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #f97316;
+        background: #fff7ed;
+        border: 1px solid #fed7aa;
+        border-radius: 20px;
+        padding: 1px 8px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all .2s;
+    }
+
+    .fb-restaurant-badge:hover {
+        background: #ffedd5;
+        color: #ea580c;
+        text-decoration: none;
+    }
+
+    .fb-post-time {
+        font-size: 0.75rem;
+        color: #65676b;
+        margin-top: 1px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Rating stars */
+    .fb-rating {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        font-size: 0.8rem;
+    }
+
+    .star-filled { color: #f59e0b; }
+    .star-empty  { color: #d1d5db; }
+
+    /* Body */
+    .fb-card-body {
+        padding: 0 16px 12px;
+        cursor: pointer;
+    }
+
+    .fb-post-title {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #1c1e21;
+        margin-bottom: 6px;
+        line-height: 1.4;
+    }
+
+    .fb-post-excerpt {
+        font-size: 0.88rem;
+        color: #3e4042;
+        line-height: 1.55;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Image */
+    .fb-card-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+        display: block;
+        cursor: pointer;
+        margin-top: 4px;
+    }
+
+    .fb-card-image-placeholder {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #fff7ed, #fef3c7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        cursor: pointer;
+    }
+
+    /* Divider */
+    .fb-card-divider {
+        height: 1px;
+        background: #e4e6ea;
+        margin: 0 16px;
+    }
+
+    /* Stats row */
+    .fb-stats-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 16px;
+        font-size: 0.8rem;
+        color: #65676b;
+    }
+
+    .fb-stats-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Action buttons */
+    .fb-card-actions {
+        display: flex;
+        align-items: center;
+        border-top: 1px solid #e4e6ea;
+        padding: 4px 8px;
+    }
+
+    .fb-action-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 4px;
+        border-radius: 8px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #65676b;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        transition: background .18s;
+    }
+
+    .fb-action-btn:hover {
+        background: #f2f2f2;
+        color: #050505;
+        text-decoration: none;
+    }
+
+    .fb-action-btn.primary:hover {
+        background: #fff3e0;
+        color: #f97316;
+    }
+
+    /* Empty state */
+    .fb-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #e4e6ea;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .fb-empty-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+    }
+
+    .fb-empty-text {
+        color: #65676b;
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+</style>
+
+<div class="fb-feed-wrapper">
+    <div class="fb-feed-header">
+        <span class="fb-feed-title">🔥 Bài viết review mới nhất</span>
         @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch) || !string.IsNullOrEmpty(ViewBag.CurrentLocation))
         {
-            <a href="@Url.Action("Index", "Home")" class="text-orange-500 font-bold hover:underline">Xóa bộ lọc</a>
+            <a href="@Url.Action("Index", "Home")" class="fb-clear-filter">✕ Xóa bộ lọc</a>
         }
     </div>
 
     @if (Model.Any())
     {
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            @foreach (var post in Model)
-            {
-                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 transform hover:scale-105 cursor-pointer"
-                     onclick="window.location.href='@Url.Action("Details", "Post", new { id = post.Id })'">
-                    <!-- Post Image -->
-                    <div class="relative w-full h-48 bg-gray-200 overflow-hidden">
-                        @if (!string.IsNullOrEmpty(post.ImageUrl))
+        @foreach (var post in Model)
+        {
+            var userInitial = string.IsNullOrEmpty(post.User?.FullName)
+                ? (post.User?.UserName?.Substring(0, 1).ToUpper() ?? "?")
+                : post.User.FullName.Substring(0, 1).ToUpper();
+
+            var displayName = !string.IsNullOrEmpty(post.User?.FullName)
+                ? post.User.FullName
+                : post.User?.UserName ?? "Ẩn danh";
+
+            var likeCount  = post.PostLikes?.Count ?? 0;
+            var cmtCount   = post.Comments?.Count  ?? 0;
+
+            var postUrl = Url.Action("Details", "Post", new { id = post.Id });
+
+            <div class="fb-post-card">
+                <!-- Header -->
+                <div class="fb-card-header">
+                    <div class="fb-avatar">
+                        @if (!string.IsNullOrEmpty(post.User?.AvatarUrl))
                         {
-                            <img src="@post.ImageUrl" alt="@post.Title" class="w-full h-full object-cover" />
+                            <img src="@post.User.AvatarUrl" alt="@displayName" />
                         }
                         else
                         {
-                            <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-200 to-amber-200">
-                                <span class="text-4xl">📸</span>
-                            </div>
+                            @userInitial
                         }
                     </div>
 
-                    <!-- Post Content -->
-                    <div class="p-4">
-                        <!-- Restaurant Name -->
-                        <p class="text-xs font-bold text-orange-500 uppercase tracking-wide">
-                            @post.Restaurant?.Name
-                        </p>
-
-                        <!-- Title -->
-                        <h3 class="mt-2 text-lg font-bold text-gray-800 line-clamp-2">@post.Title</h3>
-
-                        <!-- Rating -->
-                        <div class="mt-2 flex items-center gap-1">
-                            @for (int i = 0; i < post.Rating; i++)
+                    <div class="fb-user-meta">
+                        <div class="fb-user-name">
+                            <span>@displayName</span>
+                            @if (!string.IsNullOrEmpty(post.Restaurant?.Name))
                             {
-                                <span class="text-yellow-400">⭐</span>
+                                <span style="color:#65676b; font-weight:400; font-size:0.8rem;">đã đánh giá</span>
+                                <span class="fb-restaurant-badge">
+                                    🍽️ @post.Restaurant.Name
+                                </span>
                             }
-                            <span class="ml-1 text-sm font-semibold text-gray-600">@post.Rating/5</span>
                         </div>
-
-                        <!-- Author & Date -->
-                        <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
-                            <span>👤 @post.User?.UserName</span>
-                            <span>📅 @post.CreatedAt.ToString("dd/MM/yyyy")</span>
-                        </div>
-
-                        <!-- Like & Comment Count -->
-                        <div class="mt-3 flex justify-between text-sm font-semibold text-gray-700">
-                            <span>👍 @post.PostLikes?.Count() yêu thích</span>
-                            <span>💬 @post.Comments?.Count() bình luận</span>
+                        <div class="fb-post-time">
+                            <span>🕐</span>
+                            <span>@post.CreatedAt.ToString("dd/MM/yyyy • HH:mm")</span>
+                            &nbsp;·&nbsp;
+                            <div class="fb-rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="@(i <= post.Rating ? "star-filled" : "star-empty")">★</span>
+                                }
+                                <span style="margin-left:2px; font-weight:700; color:#1c1e21;">@post.Rating/5</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            }
-        </div>
+
+                <!-- Title & excerpt (clickable) -->
+                <div class="fb-card-body" onclick="window.location.href='@postUrl'">
+                    <div class="fb-post-title">@post.Title</div>
+                    @if (!string.IsNullOrWhiteSpace(post.Content))
+                    {
+                        <div class="fb-post-excerpt">@post.Content</div>
+                    }
+                </div>
+
+                <!-- Image -->
+                @if (!string.IsNullOrEmpty(post.ImageUrl))
+                {
+                    <img src="@post.ImageUrl"
+                         alt="@post.Title"
+                         class="fb-card-image"
+                         onclick="window.location.href='@postUrl'"
+                         loading="lazy" />
+                }
+                else
+                {
+                    <div class="fb-card-image-placeholder" onclick="window.location.href='@postUrl'">
+                        📸
+                    </div>
+                }
+
+                <!-- Stats row -->
+                @if (likeCount > 0 || cmtCount > 0)
+                {
+                    <div class="fb-stats-row">
+                        @if (likeCount > 0)
+                        {
+                            <div class="fb-stats-item">
+                                <span>👍</span>
+                                <span>@likeCount</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div></div>
+                        }
+                        @if (cmtCount > 0)
+                        {
+                            <div class="fb-stats-item">
+                                <span>@cmtCount bình luận</span>
+                            </div>
+                        }
+                    </div>
+                }
+
+                <!-- Action bar -->
+                <div class="fb-card-actions">
+                    <button class="fb-action-btn" onclick="window.location.href='@postUrl'">
+                        👍 Thích
+                    </button>
+                    <button class="fb-action-btn" onclick="window.location.href='@postUrl'">
+                        💬 Bình luận
+                    </button>
+                    <a href="@postUrl" class="fb-action-btn primary">
+                        📖 Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        }
     }
     else
     {
-        <div class="text-center py-12">
-            <p class="text-gray-500 text-lg">Không tìm thấy bài viết nào. Hãy thử tìm kiếm với từ khóa khác!</p>
+        <div class="fb-empty-state">
+            <div class="fb-empty-icon">🍜</div>
+            <p class="fb-empty-text">Không tìm thấy bài viết nào. Hãy thử tìm kiếm với từ khóa khác!</p>
         </div>
     }
 </div>

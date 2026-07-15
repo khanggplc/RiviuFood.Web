@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -31,7 +31,8 @@ public class PostController(
             p => p.Id == id,
             p => p.Restaurant,
             p => p.User,
-            p => p.Comments
+            p => p.Comments,
+            p => p.PostLikes
         );
 
         if (post == null) return NotFound();
