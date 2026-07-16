@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using RiviuFood.Web.Data;
 using RiviuFood.Web.Hubs;
 using RiviuFood.Web.Models.Entities;
 using RiviuFood.Web.Repositories;
+using RiviuFood.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +18,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+// Đăng ký Email Sender cho Identity (Quên mật khẩu)
+builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
 // BỔ SUNG .AddRoles<IdentityRole>() VÀO CẤU HÌNH IDENTITY
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => {

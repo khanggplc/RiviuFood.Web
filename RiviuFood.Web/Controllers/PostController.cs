@@ -22,6 +22,64 @@ public class PostController(
     IWebHostEnvironment _webHostEnvironment,
     IGenericRepository<PostLike> _likeRepo) : Controller
 {
+    // Danh sách khu vực / quận huyện tại Việt Nam
+    private static readonly List<SelectListItem> VietnamAreas = new()
+    {
+        new SelectListItem { Value = "", Text = "-- Chọn khu vực --" },
+        // TP. Hồ Chí Minh
+        new SelectListItem { Value = "Quận 1 (HCM)",       Text = "Quận 1 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 2 (HCM)",       Text = "Quận 2 / TP. Thủ Đức" },
+        new SelectListItem { Value = "Quận 3 (HCM)",       Text = "Quận 3 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 4 (HCM)",       Text = "Quận 4 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 5 (HCM)",       Text = "Quận 5 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 6 (HCM)",       Text = "Quận 6 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 7 (HCM)",       Text = "Quận 7 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 8 (HCM)",       Text = "Quận 8 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 9 (HCM)",       Text = "Quận 9 / TP. Thủ Đức" },
+        new SelectListItem { Value = "Quận 10 (HCM)",      Text = "Quận 10 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 11 (HCM)",      Text = "Quận 11 (TP.HCM)" },
+        new SelectListItem { Value = "Quận 12 (HCM)",      Text = "Quận 12 (TP.HCM)" },
+        new SelectListItem { Value = "Bình Thạnh (HCM)",   Text = "Bình Thạnh (TP.HCM)" },
+        new SelectListItem { Value = "Bình Tân (HCM)",     Text = "Bình Tân (TP.HCM)" },
+        new SelectListItem { Value = "Gò Vấp (HCM)",       Text = "Gò Vấp (TP.HCM)" },
+        new SelectListItem { Value = "Phú Nhuận (HCM)",    Text = "Phú Nhuận (TP.HCM)" },
+        new SelectListItem { Value = "Tân Bình (HCM)",     Text = "Tân Bình (TP.HCM)" },
+        new SelectListItem { Value = "Tân Phú (HCM)",      Text = "Tân Phú (TP.HCM)" },
+        new SelectListItem { Value = "Thủ Đức (HCM)",      Text = "TP. Thủ Đức (TP.HCM)" },
+        new SelectListItem { Value = "Bình Chánh (HCM)",   Text = "Bình Chánh (TP.HCM)" },
+        new SelectListItem { Value = "Củ Chi (HCM)",       Text = "Củ Chi (TP.HCM)" },
+        new SelectListItem { Value = "Hóc Môn (HCM)",      Text = "Hóc Môn (TP.HCM)" },
+        new SelectListItem { Value = "Nhà Bè (HCM)",       Text = "Nhà Bè (TP.HCM)" },
+        new SelectListItem { Value = "Cần Giờ (HCM)",      Text = "Cần Giờ (TP.HCM)" },
+        // Hà Nội
+        new SelectListItem { Value = "Ba Đình (HN)",        Text = "Ba Đình (Hà Nội)" },
+        new SelectListItem { Value = "Cầu Giấy (HN)",       Text = "Cầu Giấy (Hà Nội)" },
+        new SelectListItem { Value = "Đống Đa (HN)",        Text = "Đống Đa (Hà Nội)" },
+        new SelectListItem { Value = "Hai Bà Trưng (HN)",   Text = "Hai Bà Trưng (Hà Nội)" },
+        new SelectListItem { Value = "Hoàn Kiếm (HN)",      Text = "Hoàn Kiếm (Hà Nội)" },
+        new SelectListItem { Value = "Hoàng Mai (HN)",       Text = "Hoàng Mai (Hà Nội)" },
+        new SelectListItem { Value = "Long Biên (HN)",       Text = "Long Biên (Hà Nội)" },
+        new SelectListItem { Value = "Tây Hồ (HN)",          Text = "Tây Hồ (Hà Nội)" },
+        new SelectListItem { Value = "Thanh Xuân (HN)",      Text = "Thanh Xuân (Hà Nội)" },
+        new SelectListItem { Value = "Hà Đông (HN)",          Text = "Hà Đông (Hà Nội)" },
+        new SelectListItem { Value = "Nam Từ Liêm (HN)",      Text = "Nam Từ Liêm (Hà Nội)" },
+        new SelectListItem { Value = "Bắc Từ Liêm (HN)",      Text = "Bắc Từ Liêm (Hà Nội)" },
+        // Đà Nẵng
+        new SelectListItem { Value = "Hải Châu (DN)",       Text = "Hải Châu (Đà Nẵng)" },
+        new SelectListItem { Value = "Thanh Khê (DN)",      Text = "Thanh Khê (Đà Nẵng)" },
+        new SelectListItem { Value = "Sơn Trà (DN)",        Text = "Sơn Trà (Đà Nẵng)" },
+        new SelectListItem { Value = "Ngũ Hành Sơn (DN)",   Text = "Ngũ Hành Sơn (Đà Nẵng)" },
+        new SelectListItem { Value = "Liên Chiểu (DN)",     Text = "Liên Chiểu (Đà Nẵng)" },
+        new SelectListItem { Value = "Cẩm Lệ (DN)",         Text = "Cẩm Lệ (Đà Nẵng)" },
+        // Tỉnh thành khác
+        new SelectListItem { Value = "Bình Dương",          Text = "Bình Dương" },
+        new SelectListItem { Value = "Đồng Nai",            Text = "Đồng Nai" },
+        new SelectListItem { Value = "Cần Thơ",             Text = "Cần Thơ" },
+        new SelectListItem { Value = "Nha Trang",           Text = "Nha Trang (Khánh Hòa)" },
+        new SelectListItem { Value = "Hội An",              Text = "Hội An (Quảng Nam)" },
+        new SelectListItem { Value = "Huế",                 Text = "Huế (Thừa Thiên Huế)" },
+        new SelectListItem { Value = "Khác",                Text = "Khu vực khác..." },
+    };
     // 1. Trang chi tiết bài review
     [HttpGet]
     [AllowAnonymous]
@@ -107,8 +165,9 @@ public class PostController(
             Restaurants = restaurants.Cast<Restaurant>().Select(r => new SelectListItem
             {
                 Value = r.Id.ToString(),
-                Text = r.Name
-            }).ToList()
+                Text = r.Name + (string.IsNullOrEmpty(r.Area) ? "" : $" ({r.Area})")
+            }).ToList(),
+            Areas = VietnamAreas
         };
         return View(viewModel);
     }
@@ -124,12 +183,43 @@ public class PostController(
             var userId = _userManager.GetUserId(User);
             if (userId == null) return BadRequest();
 
+            int targetRestaurantId = 0;
+            if (model.RestaurantId.HasValue && model.RestaurantId.Value > 0)
+            {
+                targetRestaurantId = model.RestaurantId.Value;
+            }
+            else if (!string.IsNullOrWhiteSpace(model.NewRestaurantName))
+            {
+                var newRestaurant = new Restaurant
+                {
+                    Name = model.NewRestaurantName.Trim(),
+                    Address = model.NewRestaurantAddress?.Trim() ?? "Chưa rõ địa chỉ",
+                    Area = model.NewRestaurantArea?.Trim(),
+                    CreatedAt = DateTime.Now
+                };
+                await _restaurantRepo.AddAsync(newRestaurant);
+                await _restaurantRepo.SaveChangesAsync();
+                targetRestaurantId = newRestaurant.Id;
+            }
+            else
+            {
+                ModelState.AddModelError("RestaurantId", "Vui lòng chọn quán hoặc tự nhập tên quán mới nhé Boss!");
+                var restaurantsList = await _restaurantRepo.GetAllAsync();
+                model.Restaurants = restaurantsList.Cast<Restaurant>().Select(r => new SelectListItem
+                {
+                    Value = r.Id.ToString(),
+                    Text = r.Name + (string.IsNullOrEmpty(r.Area) ? "" : $" ({r.Area})")
+                }).ToList();
+                model.Areas = VietnamAreas;
+                return View(model);
+            }
+
             var post = new Post
             {
                 Title = model.Title,
                 Content = model.Content,
                 Rating = model.Rating,
-                RestaurantId = model.RestaurantId,
+                RestaurantId = targetRestaurantId,
                 UserId = userId,
                 CreatedAt = DateTime.Now
             };
@@ -162,8 +252,9 @@ public class PostController(
         model.Restaurants = restaurants.Cast<Restaurant>().Select(r => new SelectListItem
         {
             Value = r.Id.ToString(),
-            Text = r.Name
+            Text = r.Name + (string.IsNullOrEmpty(r.Area) ? "" : $" ({r.Area})")
         }).ToList();
+        model.Areas = VietnamAreas;
 
         return View(model);
     }

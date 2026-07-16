@@ -1,4 +1,4 @@
-﻿@model RiviuFood.Web.Models.ViewModels.PostCreateVM
+@model RiviuFood.Web.Models.ViewModels.PostCreateVM
 
 <div class="container mx-auto px-4 py-10 max-w-2xl">
     <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
@@ -20,11 +20,34 @@
             @* Chọn Quán *@
             <div>
                 <label asp-for="RestaurantId" class="block font-bold text-gray-700 mb-2 ml-1">Địa điểm check-in</label>
-                <select asp-for="RestaurantId" asp-items="Model.Restaurants"
+                <select asp-for="RestaurantId" asp-items="Model.Restaurants" id="restaurantSelect"
                         class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer">
                     <option value="">-- Chọn quán Boss vừa ghé --</option>
+                    <option value="-1">➕ Tự nhập quán mới...</option>
                 </select>
                 <span asp-validation-for="RestaurantId" class="text-red-500 text-xs mt-1 ml-1"></span>
+            </div>
+
+            @* Nhập quán mới (Ẩn/Hiện bằng JS) *@
+            <div id="newRestaurantFields" class="hidden space-y-4 p-5 bg-orange-50/50 border border-orange-100 rounded-2xl">
+                <h4 class="font-bold text-orange-800 text-sm">➕ Thông tin quán mới</h4>
+                <div>
+                    <label asp-for="NewRestaurantName" class="block text-xs font-bold text-gray-600 mb-1 ml-1">Tên quán ăn / cafe *</label>
+                    <input asp-for="NewRestaurantName" class="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                           placeholder="Nhập tên quán..." />
+                    <span asp-validation-for="NewRestaurantName" class="text-red-500 text-xs mt-1 ml-1"></span>
+                </div>
+                <div>
+                    <label asp-for="NewRestaurantArea" class="block text-xs font-bold text-gray-600 mb-1 ml-1">📍 Khu vực / Quận</label>
+                    <select asp-for="NewRestaurantArea" asp-items="Model.Areas"
+                            class="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none cursor-pointer">
+                    </select>
+                </div>
+                <div>
+                    <label asp-for="NewRestaurantAddress" class="block text-xs font-bold text-gray-600 mb-1 ml-1">Địa chỉ chi tiết</label>
+                    <input asp-for="NewRestaurantAddress" class="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-500 outline-none transition-all"
+                           placeholder="Số nhà, tên đường..." />
+                </div>
             </div>
 
             @* Xếp hạng & Ảnh *@
@@ -80,5 +103,24 @@
                 reader.readAsDataURL(file);
             }
         });
+
+        // JS để ẩn/hiện form nhập quán mới
+        $("#restaurantSelect").change(function() {
+            if ($(this).val() === "-1") {
+                $("#newRestaurantFields").removeClass("hidden");
+                $("#NewRestaurantName").attr("required", "required");
+            } else {
+                $("#newRestaurantFields").addClass("hidden");
+                $("#NewRestaurantName").removeAttr("required");
+                $("#NewRestaurantName").val("");
+                $("#NewRestaurantAddress").val("");
+            }
+        });
+
+        // Trigger lúc load trang (nếu có lỗi validation và redirect lại)
+        if ($("#restaurantSelect").val() === "-1") {
+            $("#newRestaurantFields").removeClass("hidden");
+            $("#NewRestaurantName").attr("required", "required");
+        }
     </script>
 }

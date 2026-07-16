@@ -25,10 +25,12 @@ namespace RiviuFood.Web.Controllers
                                                 || p.Content.Contains(searchString, System.StringComparison.OrdinalIgnoreCase));
             }
 
-            // 3. Bộ lọc tìm kiếm theo Địa điểm / Tên nhà hàng
+            // 3. Bộ lọc tìm kiếm theo Khu vực quán ăn
             if (!string.IsNullOrEmpty(locationFilter))
             {
-                postsQuery = postsQuery.Where(p => p.Restaurant != null && p.Restaurant.Name.Contains(locationFilter, System.StringComparison.OrdinalIgnoreCase));
+                postsQuery = postsQuery.Where(p => p.Restaurant != null
+                    && p.Restaurant.Area != null
+                    && p.Restaurant.Area.Contains(locationFilter, System.StringComparison.OrdinalIgnoreCase));
             }
 
             // 4. Sắp xếp bài viết mới nhất lên đầu tiên và gửi ra giao diện
